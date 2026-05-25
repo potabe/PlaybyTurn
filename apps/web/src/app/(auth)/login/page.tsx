@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+
 
 // GitHub Icon SVG
 function GitHubIcon() {
@@ -19,6 +20,22 @@ function GitHubIcon() {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-sm animate-pulse space-y-4">
+        <div className="h-8 w-24 bg-muted rounded" />
+        <div className="h-6 w-40 bg-muted rounded" />
+        <div className="h-11 bg-muted rounded-xl" />
+        <div className="h-11 bg-muted rounded-xl" />
+        <div className="h-11 bg-muted rounded-xl" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/dashboard";
