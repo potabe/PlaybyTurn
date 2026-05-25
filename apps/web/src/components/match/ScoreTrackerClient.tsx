@@ -173,16 +173,8 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
             <p className="text-xs font-bold text-primary">{display.currentSetDetail}</p>
           )}
         </div>
-        <button
-          onClick={undoPoint}
-          disabled={history.length === 0}
-          className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
-          aria-label="Undo last point"
-          id="undo-btn"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Undo
-        </button>
+        {/* Spacer to balance the Back button */}
+        <div className="w-10" />
       </div>
 
       {/* ── Previous set scores ── */}
@@ -198,6 +190,30 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           ))}
         </div>
       )}
+
+      {/* ── Undo floating bar ── */}
+      <div className="flex justify-center py-2.5 bg-white border-b border-border flex-shrink-0">
+        <button
+          onClick={undoPoint}
+          disabled={history.length === 0}
+          id="undo-btn"
+          aria-label="Undo last point"
+          className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold transition-all ${
+            history.length > 0
+              ? "bg-foreground text-background hover:bg-foreground/80 active:scale-95 shadow-sm"
+              : "bg-muted text-muted-foreground cursor-not-allowed opacity-40"
+          }`}
+        >
+          <RotateCcw className="h-4 w-4" />
+          Undo last point
+          {history.length > 0 && (
+            <span className="bg-white/20 text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
+              {history.length}
+            </span>
+          )}
+        </button>
+      </div>
+
 
       {/* ── Score tap zones (50/50 vertical split) ── */}
       <div className="flex flex-1 overflow-hidden">
