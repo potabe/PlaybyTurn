@@ -1,0 +1,249 @@
+"use client";
+
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
+import { Trophy, Activity, Wifi } from "lucide-react";
+import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
+import type { Session, Player, Court, Match } from "@/types/session";
+
+interface Props {
+  session: Session;
+  initialPlayers: Player[];
+  initialCourts: Court[];
+  initialMatches: Match[];
+}
+
+// ─── Live match card ──────────────────────────────────────
+function LiveMatchCard({
+  match,
+  players,
+  court,
+}: {
+  match: Match;
+  players: Player[];
+  court?: Court;
+}) {
+  const playerMap = Object.fromEntries(players.map((p) => [p.id, p]));
+  const team1 = [match.team1_player1_id, match.team1_player2_id]
+    .filter(Boolean)
+    .map((id) => playerMap[id!]?.name)
+    .filter(Boolean)
+    .join(" & ");
+  const team2 = [match.team2_player1_id, match.team2_player2_id]
+    .filter(Boolean)
+    .map((id) => playerMap[id!]?.name)
+    .filter(Boolean)
+    .join(" & ");
+
+  const scoreData = match.score_data as Record<string, unknown>;
+  const hasScore = Object.keys(scoreData).length > 0;
+
+  return (
+    <div className="flex-shrink-0 w-72 rounded-2xl border-2 border-border bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs font-semibold text-muted-foreground">{court?.name ?? "Court"}</span>
+        <span className={`flex items-center gap-1 text-xs font-bold rounded-full px-2 py-0.5 ${
+          match.status === "IN_PROGRESS"
+            ? "bg-green-100 text-green-700"
+            : match.status === "COMPLETED"
+            ? "bg-blue-100 text-blue-700"
+            : "bg-muted text-muted-foreground"
+        }`}>
+          {match.status === "IN_PROGRESS" && (
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          )}
+          {match.status.replace("_", " ")}
+        </span>
+      </div>
+
+      {/* VS display */}
+      <div className="space-y-3">
+        <div className={`flex items-center justify-between rounded-xl px-3 py-2.5 ${
+          match.winning_team === "TEAM1" ? "bg-primary/8 border border-primary/20" : "bg-muted/40"
+        }`}>
+          <span className="text-sm font-bold truncate max-w-36">{team1}</span>
+          {match.winning_team === "TEAM1" && <span className="text-primary text-xs font-black ml-2">WIN</span>}
+        </div>
+        <div className="text-center">
+          <span className="text-xs font-black text-muted-foreground">VS</span>
+        </div>
+        <div className={`flex items-center justify-between rounded-xl px-3 py-2.5 ${
+          match.winning_team === "TEAM2" ? "bg-primary/8 border border-primary/20" : "bg-muted/40"
+        }`}>
+          <span className="text-sm font-bold truncate max-w-36">{team2}</span>
+          {match.winning_team === "TEAM2" && <span className="text-primary text-xs font-black ml-2">WIN</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Standings table ──────────────────────────────────────
+function StandingsTable({ players }: { players: Player[] }) {
+  const sorted = [...players].sort((a, b) => {
+    if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
+    return b.point_differential - a.point_differential;
+  });
+
+  return (
+    <div className="rounded-2xl border border-border overflow-hidden">
+      {/* Header */}
+      <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 px-4 py-2.5 bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground uppercase tracking-wide">
+        <span>#</span>
+        <span>Player</span>
+        <span className="text-center">P</span>
+        <span className="text-center">W</span>
+        <span className="text-center">Pts</span>
+      </div>
+      {sorted.length === 0 && (
+        <div className="text-center py-8 text-sm text-muted-foreground">No matches yet</div>
+      )}
+      {sorted.map((player, i) => {
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
+        return (
+          <div
+            key={player.id}
+            className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 px-4 py-3.5 items-center border-b border-border last:border-0 ${
+              i < 3 ? "bg-primary/2" : ""
+            }`}
+          >
+            <span className="text-sm w-6 text-center font-bold text-muted-foreground">
+              {medal ?? i + 1}
+            </span>
+            <span className="text-sm font-semibold truncate">{player.name}</span>
+            <span className="text-sm font-medium text-center text-muted-foreground">{player.matches_played}</span>
+            <span className="text-sm font-bold text-center text-primary">{player.matches_won}</span>
+            <span className="text-sm font-black text-center">{player.points_won}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Main spectator client ────────────────────────────────
+export function SpectatorClient({ session, initialPlayers, initialCourts, initialMatches }: Props) {
+  const supabase = createClient();
+  const queryClient = useQueryClient();
+
+  // Data queries
+  const { data: players } = useQuery({
+    queryKey: ["spectator-players", session.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("players").select("*").eq("session_id", session.id);
+      return (data ?? []) as Player[];
+    },
+    initialData: initialPlayers,
+    refetchInterval: 15_000, // poll every 15s as fallback
+  });
+
+  const { data: courts } = useQuery({
+    queryKey: ["spectator-courts", session.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("courts").select("*").eq("session_id", session.id);
+      return (data ?? []) as Court[];
+    },
+    initialData: initialCourts,
+    staleTime: 60_000,
+  });
+
+  const { data: matches } = useQuery({
+    queryKey: ["spectator-matches", session.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("matches").select("*").eq("session_id", session.id).order("round_number");
+      return (data ?? []) as Match[];
+    },
+    initialData: initialMatches,
+    refetchInterval: 10_000, // poll every 10s as fallback
+  });
+
+  // ── Supabase Realtime ──────────────────────────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel(`session:${session.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "matches", filter: `session_id=eq.${session.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["spectator-matches", session.id] });
+        }
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: `session_id=eq.${session.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["spectator-players", session.id] });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [session.id, supabase, queryClient]);
+
+  const courtMap = Object.fromEntries((courts ?? []).map((c) => [c.id, c]));
+  const activeMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
+  const completedMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-border">
+        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+          <span className="text-xl font-black gradient-text">UrTurn</span>
+          <div className="flex items-center gap-2 rounded-full bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5">
+            <Wifi className="h-3.5 w-3.5" />
+            Live
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-8">
+        {/* Session info */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="text-4xl mb-2">{SPORT_EMOJIS[session.sport]}</div>
+          <h1 className="text-2xl font-black tracking-tight">{session.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {SPORT_LABELS[session.sport]} · {FORMAT_LABELS[session.format]}
+          </p>
+          <div className={`inline-flex items-center gap-1.5 mt-2 rounded-full px-3 py-1 text-xs font-bold ${
+            session.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+          }`}>
+            {session.status === "ACTIVE" && <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />}
+            {session.status}
+          </div>
+        </motion.div>
+
+        {/* Live match carousel */}
+        {activeMatches.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="h-4 w-4 text-green-600" />
+              <h2 className="text-sm font-bold text-green-700 uppercase tracking-wider">On Court</h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
+              {activeMatches.map((m) => (
+                <LiveMatchCard key={m.id} match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Standings */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold uppercase tracking-wider">Standings</h2>
+          </div>
+          <StandingsTable players={players ?? []} />
+        </section>
+
+        {/* No account needed notice */}
+        <p className="text-center text-xs text-muted-foreground pb-8">
+          👀 You are viewing as a spectator · No account needed
+        </p>
+      </main>
+    </div>
+  );
+}
