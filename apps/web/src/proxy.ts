@@ -3,8 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ["/", "/login", "/signup"];
-// Routes that start with these prefixes are always public (e.g. spectator view)
-const PUBLIC_PREFIXES = ["/s/"];
+// Routes that start with these prefixes are always public
+const PUBLIC_PREFIXES = ["/s/", "/auth/", "/api/"];
+
 
 // Next.js 16: export as "proxy" (renamed from "middleware")
 export async function proxy(request: NextRequest) {
@@ -63,6 +64,14 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-.*\\.js).*)",
+    /*
+     * Match all request paths EXCEPT:
+     * - _next/static (static files)
+     * - _next/image (image optimization)
+     * - All image/font/media file extensions
+     * - favicon files
+     * - PWA files (manifest, icons, service worker)
+     */
+    "/((?!_next/static|_next/image|favicon\\.ico|favicon-.*\\.png|og-image\\.jpg|icons/|manifest\\.json|sw\\.js|workbox-.*\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2)).*)",
   ],
 };

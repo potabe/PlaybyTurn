@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, LogOut, Settings, ChevronDown } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, Settings, ChevronDown } from "lucide-react";
 
 
 export function AppNav() {
@@ -51,6 +51,18 @@ export function AppNav() {
             <LayoutDashboard className="h-3.5 w-3.5" />
             Sessions
           </Link>
+          <Link
+            href="/stats"
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              pathname === "/stats"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+            id="nav-stats-link"
+          >
+            <BarChart3 className="h-3.5 w-3.5" />
+            Stats
+          </Link>
         </nav>
 
         {/* User menu */}
@@ -84,6 +96,14 @@ export function AppNav() {
             >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => router.push("/stats")}
+              id="dropdown-stats-link"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Player Stats
             </DropdownMenuItem>
             <DropdownMenuItem className="flex items-center gap-2 text-muted-foreground cursor-pointer">
               <Settings className="h-4 w-4" />
