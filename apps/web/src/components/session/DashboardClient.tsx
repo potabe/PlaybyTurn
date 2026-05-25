@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Calendar, Trophy, Clock, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Calendar, Clock, Zap, Trash2, X, AlertTriangle } from "lucide-react";
 import { formatRelativeTime, SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session } from "@/types/session";
 
@@ -17,18 +18,124 @@ const STATUS_CONFIG = {
   CANCELLED: { label: "Cancelled", className: "bg-red-100 text-red-700 border-red-200" },
 };
 
-function SessionCard({ session }: { session: Session }) {
+// ── Deletable statuses ──────────────────────────────────────────
+const DELETABLE_STATUSES: Session["status"][] = ["COMPLETED", "CANCELLED"];
+
+// ── Delete confirmation modal ───────────────────────────────────
+function DeleteConfirmModal({
+  session,
+  onConfirm,
+  onCancel,
+  isDeleting,
+}: {
+  session: Session;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isDeleting: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center p-0 sm:p-4"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    >
+      <motion.div
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        className="w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden"
+      >
+        {/* Drag handle */}
+        <div className="w-10 h-1 rounded-full bg-border mx-auto mt-4 mb-0 sm:hidden" />
+
+        <div className="px-6 pt-6 pb-8">
+          {/* Icon */}
+          <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="h-7 w-7 text-destructive" />
+          </div>
+
+          <h2 className="text-xl font-black text-center mb-1">Delete session?</h2>
+          <p className="text-sm text-muted-foreground text-center mb-1">
+            <span className="font-semibold text-foreground">&ldquo;{session.title}&rdquo;</span>
+          </p>
+          <p className="text-xs text-muted-foreground text-center mb-6">
+            {SPORT_EMOJIS[session.sport]} {SPORT_LABELS[session.sport]} ·{" "}
+            {FORMAT_LABELS[session.format]} · {formatRelativeTime(session.created_at)}
+          </p>
+
+          {/* Warning */}
+          <div className="flex items-start gap-2.5 rounded-xl bg-destructive/6 border border-destructive/20 px-3.5 py-3 mb-6">
+            <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-destructive leading-relaxed">
+              This will permanently delete the session along with all players, matches, and scores. This cannot be undone.
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 h-11 rounded-xl"
+              onClick={onCancel}
+              disabled={isDeleting}
+              id="cancel-delete-btn"
+            >
+              <X className="h-4 w-4 mr-1.5" />
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 h-11 rounded-xl bg-destructive hover:bg-destructive/90 text-white font-bold"
+              onClick={onConfirm}
+              disabled={isDeleting}
+              id="confirm-delete-btn"
+            >
+              {isDeleting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Deleting…
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </span>
+              )}
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ── Session card ────────────────────────────────────────────────
+function SessionCard({
+  session,
+  onDeleteRequest,
+}: {
+  session: Session;
+  onDeleteRequest: (session: Session) => void;
+}) {
   const status = STATUS_CONFIG[session.status];
   const emoji = SPORT_EMOJIS[session.sport];
+  const isDeletable = DELETABLE_STATUSES.includes(session.status);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -40, transition: { duration: 0.2 } }}
       transition={{ duration: 0.3 }}
+      layout
     >
-      <Link href={`/sessions/${session.id}`}>
-        <div className="group flex items-center gap-4 rounded-2xl border border-border bg-white p-4 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200">
+      <div className="group flex items-center gap-3 rounded-2xl border border-border bg-white hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden pr-1">
+        {/* Main clickable area */}
+        <Link
+          href={`/sessions/${session.id}`}
+          className="flex items-center gap-4 flex-1 min-w-0 p-4 pr-2"
+        >
           {/* Sport icon */}
           <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-primary/8 text-2xl">
             {emoji}
@@ -57,8 +164,20 @@ function SessionCard({ session }: { session: Session }) {
               {formatRelativeTime(session.created_at)}
             </p>
           </div>
-        </div>
-      </Link>
+        </Link>
+
+        {/* Delete button — only for completed/cancelled */}
+        {isDeletable && (
+          <button
+            onClick={() => onDeleteRequest(session)}
+            className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors mr-1"
+            aria-label={`Delete session ${session.title}`}
+            id={`delete-session-${session.id}-btn`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -112,6 +231,8 @@ interface DashboardClientProps {
 
 export function DashboardClient({ initialSessions }: DashboardClientProps) {
   const supabase = createClient();
+  const queryClient = useQueryClient();
+  const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null);
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ["sessions"],
@@ -125,6 +246,24 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
     },
     initialData: initialSessions,
     staleTime: 30_000,
+  });
+
+  const deleteSession = useMutation({
+    mutationFn: async (sessionId: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("sessions")
+        .delete()
+        .eq("id", sessionId);
+      if (error) throw error;
+    },
+    onSuccess: (_, sessionId) => {
+      // Optimistically remove from cache
+      queryClient.setQueryData<Session[]>(["sessions"], (old) =>
+        old ? old.filter((s) => s.id !== sessionId) : []
+      );
+      setSessionToDelete(null);
+    },
   });
 
   const activeSessions = sessions?.filter((s) => s.status === "ACTIVE") ?? [];
@@ -175,9 +314,15 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
             </h2>
           </div>
           <div className="space-y-2">
-            {activeSessions.map((session) => (
-              <SessionCard key={session.id} session={session} />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {activeSessions.map((session) => (
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  onDeleteRequest={setSessionToDelete}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         </section>
       )}
@@ -192,9 +337,15 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
             </h2>
           </div>
           <div className="space-y-2">
-            {pastSessions.map((session) => (
-              <SessionCard key={session.id} session={session} />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {pastSessions.map((session) => (
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  onDeleteRequest={setSessionToDelete}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         </section>
       )}
@@ -209,6 +360,18 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
         <Plus className="h-5 w-5" />
         <span>New Session</span>
       </Link>
+
+      {/* Delete confirmation modal */}
+      <AnimatePresence>
+        {sessionToDelete && (
+          <DeleteConfirmModal
+            session={sessionToDelete}
+            onConfirm={() => deleteSession.mutate(sessionToDelete.id)}
+            onCancel={() => setSessionToDelete(null)}
+            isDeleting={deleteSession.isPending}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
