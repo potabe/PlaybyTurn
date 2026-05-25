@@ -6,7 +6,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { getScoringEngine } from "@/lib/scoring";
-import { ArrowLeft, RotateCcw, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Minus, CheckCircle2, AlertTriangle } from "lucide-react";
+
+
 import { Button } from "@/components/ui/button";
 import type { Match, Session, Player } from "@/types/session";
 import type { ScoreData, Team } from "@/types/scoring";
@@ -191,29 +193,6 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
         </div>
       )}
 
-      {/* ── Undo floating bar ── */}
-      <div className="flex justify-center py-2.5 bg-white border-b border-border flex-shrink-0">
-        <button
-          onClick={undoPoint}
-          disabled={history.length === 0}
-          id="undo-btn"
-          aria-label="Undo last point"
-          className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold transition-all ${
-            history.length > 0
-              ? "bg-foreground text-background hover:bg-foreground/80 active:scale-95 shadow-sm"
-              : "bg-muted text-muted-foreground cursor-not-allowed opacity-40"
-          }`}
-        >
-          <RotateCcw className="h-4 w-4" />
-          Undo last point
-          {history.length > 0 && (
-            <span className="bg-white/20 text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
-              {history.length}
-            </span>
-          )}
-        </button>
-      </div>
-
 
       {/* ── Score tap zones (50/50 vertical split) ── */}
       <div className="flex flex-1 overflow-hidden">
@@ -238,10 +217,27 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               />
             )}
           </AnimatePresence>
-          <div className="score-display text-foreground">
-            {display.team1}
+          {/* Score + minus button */}
+          <div className="flex items-center gap-3">
+            <div className="score-display text-foreground">{display.team1}</div>
+            <AnimatePresence>
+              {history.length > 0 && !isComplete && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ type: "spring", damping: 18, stiffness: 380 }}
+                  onClick={(e) => { e.stopPropagation(); undoPoint(); }}
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-muted border border-border hover:bg-muted/70 active:scale-90 transition-transform shadow-sm"
+                  aria-label="Undo last point"
+                  id="undo-btn"
+                >
+                  <Minus className="h-5 w-5 text-foreground" />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
-          <p className="text-sm font-bold text-muted-foreground mt-2 px-4 text-center max-w-48 truncate">
+          <p className="text-sm font-bold text-muted-foreground mt-3 px-4 text-center max-w-48 truncate">
             {team1Name}
           </p>
           <p className="text-xs text-muted-foreground/60 mt-1">Tap to score</p>
@@ -271,10 +267,27 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               />
             )}
           </AnimatePresence>
-          <div className="score-display text-foreground">
-            {display.team2}
+          {/* Minus button + score (mirrored) */}
+          <div className="flex items-center gap-3">
+            <AnimatePresence>
+              {history.length > 0 && !isComplete && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ type: "spring", damping: 18, stiffness: 380 }}
+                  onClick={(e) => { e.stopPropagation(); undoPoint(); }}
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-muted border border-border hover:bg-muted/70 active:scale-90 transition-transform shadow-sm"
+                  aria-label="Undo last point"
+                  id="undo-btn-team2"
+                >
+                  <Minus className="h-5 w-5 text-foreground" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+            <div className="score-display text-foreground">{display.team2}</div>
           </div>
-          <p className="text-sm font-bold text-muted-foreground mt-2 px-4 text-center max-w-48 truncate">
+          <p className="text-sm font-bold text-muted-foreground mt-3 px-4 text-center max-w-48 truncate">
             {team2Name}
           </p>
           <p className="text-xs text-muted-foreground/60 mt-1">Tap to score</p>
