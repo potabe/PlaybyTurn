@@ -210,7 +210,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
 
   // ─── Render ───────────────────────────────────────────
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden">
       {/* ── Nav bar ── */}
       <div className="flex items-center justify-between px-4 pt-safe h-14 bg-white border-b border-border flex-shrink-0 z-10">
         <button
