@@ -337,9 +337,19 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
         </motion.button>
       </div>
 
-      {/* ── End match button ── */}
-      {match.status !== "COMPLETED" && (
-        <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-white">
+      {/* ── Bottom Action Button ── */}
+      <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-white">
+        {match.status === "COMPLETED" ? (
+          <Button
+            variant="outline"
+            className="w-full h-11 rounded-xl font-bold text-sm bg-muted/30 hover:bg-muted border-dashed"
+            onClick={() => router.push(`/sessions/${match.session_id}`)}
+            id="back-to-session-btn"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Matches
+          </Button>
+        ) : (
           <Button
             variant="outline"
             className="w-full h-11 rounded-xl font-semibold text-sm"
@@ -348,8 +358,8 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           >
             End Match
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Confirm end match overlay ── */}
       <AnimatePresence>
