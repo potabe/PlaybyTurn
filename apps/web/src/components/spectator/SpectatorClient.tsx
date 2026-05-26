@@ -98,6 +98,24 @@ function StandingsTable({ players }: { players: Player[] }) {
         const diffSign = player.point_differential > 0 ? "+" : "";
         const rank = i + 1;
 
+        let pointsBg = "bg-primary/5 border-primary/10";
+        let pointsText = "text-primary";
+        let pointsLabel = "text-primary/60";
+
+        if (rank === 1) {
+          pointsBg = "bg-yellow-50 border-yellow-200";
+          pointsText = "text-yellow-600";
+          pointsLabel = "text-yellow-600/60";
+        } else if (rank === 2) {
+          pointsBg = "bg-slate-50 border-slate-200";
+          pointsText = "text-slate-600";
+          pointsLabel = "text-slate-600/60";
+        } else if (rank === 3) {
+          pointsBg = "bg-amber-50 border-amber-200";
+          pointsText = "text-amber-700";
+          pointsLabel = "text-amber-700/60";
+        }
+
         return (
           <div
             key={player.id}
@@ -112,18 +130,20 @@ function StandingsTable({ players }: { players: Player[] }) {
                 <span className="text-[11px] font-semibold bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
                   {player.matches_won}-0-{losses} <span className="opacity-70 font-medium">(W-T-L)</span>
                 </span>
-                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
-                  player.point_differential > 0 ? "bg-green-100 text-green-700" :
-                  player.point_differential < 0 ? "bg-red-100 text-red-700" :
-                  "bg-muted text-muted-foreground"
-                }`}>
-                  Diff: {diffSign}{player.point_differential}
-                </span>
               </div>
             </div>
-            <div className="text-right flex-shrink-0 bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10">
-              <p className="text-sm font-black text-primary leading-tight">{player.points_won}</p>
-              <p className="text-[9px] font-black text-primary/60 uppercase tracking-widest mt-0.5">Pts</p>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                player.point_differential > 0 ? "bg-green-100 text-green-700" :
+                player.point_differential < 0 ? "bg-red-100 text-red-700" :
+                "bg-muted text-muted-foreground"
+              }`}>
+                Diff: {diffSign}{player.point_differential}
+              </span>
+              <div className={`text-right rounded-lg px-3 py-1.5 border ${pointsBg}`}>
+                <p className={`text-sm font-black leading-tight ${pointsText}`}>{player.points_won}</p>
+                <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${pointsLabel}`}>Pts</p>
+              </div>
             </div>
           </div>
         );
