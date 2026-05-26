@@ -91,9 +91,9 @@ export function AppNav() {
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 rounded-xl">
-            <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+            <div className="px-1.5 py-1 text-xs text-muted-foreground font-normal mb-1">
               {user?.email}
-            </DropdownMenuLabel>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="flex items-center gap-2 cursor-pointer"
