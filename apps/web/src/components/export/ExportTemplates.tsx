@@ -36,18 +36,24 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
           background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)",
         }}
       >
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary/20 to-transparent pointer-events-none" />
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/30 rounded-full blur-[80px]" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-600/20 rounded-full blur-[80px]" />
+        {/* Decorative background elements (using radial gradients instead of CSS blur for html-to-image compatibility) */}
+        <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none" />
+        <div 
+          className="absolute -top-32 -right-32 w-80 h-80 rounded-full" 
+          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(0,0,0,0) 70%)' }} 
+        />
+        <div 
+          className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.2) 0%, rgba(0,0,0,0) 70%)' }} 
+        />
 
         <div className="relative z-10">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-4xl mb-4 shadow-xl">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/20 text-4xl mb-4 shadow-xl">
               {SPORT_EMOJIS[session.sport] ?? "🏆"}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-white mb-2 leading-tight">
+            <h1 className="text-3xl font-black tracking-tight text-white mb-2 leading-tight drop-shadow-md">
               {session.title}
             </h1>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/80 text-xs font-bold uppercase tracking-widest border border-white/10">
@@ -121,8 +127,8 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
               </div>
             </div>
           ) : (
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden mb-6">
-              <div className="grid grid-cols-[auto_1fr_auto_auto] gap-2 sm:gap-3 px-3 sm:px-5 py-3 bg-white/10 border-b border-white/10 text-[10px] sm:text-xs font-bold text-white/60 uppercase tracking-widest">
+            <div className="bg-[#1e293b] rounded-2xl border border-white/10 overflow-hidden mb-6 shadow-xl">
+              <div className="grid grid-cols-[auto_1fr_auto_auto] gap-2 sm:gap-3 px-3 sm:px-5 py-3 bg-black/20 border-b border-white/10 text-[10px] sm:text-xs font-bold text-white/60 uppercase tracking-widest">
                 <span className="w-5 sm:w-6 text-center">#</span>
                 <span>Player</span>
                 <span className="text-center w-12 sm:w-16">W-T-L</span>
