@@ -14,14 +14,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, BarChart3, LogOut, UserCircle, ChevronDown } from "lucide-react";
-
+import { LayoutDashboard, BarChart3, LogOut, UserCircle, ChevronDown, Download } from "lucide-react";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 export function AppNav() {
   const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const { isInstallable, isStandalone, isIOS, promptInstall } = usePWAInstall();
 
   useEffect(() => {
     setMounted(true);
@@ -119,6 +120,26 @@ export function AppNav() {
               Profile & Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+
+            {isInstallable && !isStandalone && (
+              <>
+                <DropdownMenuItem
+                  className="flex items-center gap-2 cursor-pointer font-bold text-primary focus:text-primary focus:bg-primary/10"
+                  onClick={async () => {
+                    if (isIOS) {
+                      router.push("/profile");
+                    } else {
+                      await promptInstall();
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                  Install App
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+
             <DropdownMenuItem
               className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
               onClick={signOut}

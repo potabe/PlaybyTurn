@@ -9,8 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Camera, Check, Loader2, LogOut,
-  User, Mail, Shield, Trash2, ChevronRight,
+  User, Mail, Shield, Trash2, ChevronRight, Download, Share
 } from "lucide-react";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 // ─── Animated section wrapper ─────────────────────────────────
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -23,6 +24,55 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
+
+// ... existing Row, EditNameModal, ConfirmModal ...
+
+function IOSInstallModal({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center p-4 pb-8"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
+        <h3 className="font-black text-xl mb-4 text-center">Install UrTurn</h3>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
+              <Share className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-semibold text-slate-700 leading-tight">
+              1. Tap the <span className="font-black text-primary">Share</span> button in your Safari menu bar.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
+              <div className="w-5 h-5 border-2 border-primary rounded-md flex items-center justify-center font-bold text-[10px]">+</div>
+            </div>
+            <p className="text-sm font-semibold text-slate-700 leading-tight">
+              2. Scroll down and tap <span className="font-black text-primary">Add to Home Screen</span>.
+            </p>
+          </div>
+        </div>
+        <Button className="w-full h-12 rounded-xl font-bold mt-8" onClick={onClose}>
+          Got it
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Main Profile Client ──────────────────────────────────────
 
 function Row({
   icon: Icon, label, value, onClick, destructive, showArrow = true,
@@ -161,11 +211,22 @@ export function ProfileClient() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [modal, setModal] = useState<"name" | "signout" | null>(null);
+  const [modal, setModal] = useState<"name" | "signout" | "ios-install" | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [localProfile, setLocalProfile] = useState(profile);
+  
+  const { isInstallable, isStandalone, isIOS, promptInstall } = usePWAInstall();
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      setModal("ios-install");
+    } else {
+      const accepted = await promptInstall();
+      if (accepted) showToast("App installed successfully!");
+    }
+  };
 
   const showToast = (msg: string, ok = true) => {
     setToast({ msg, ok });
@@ -338,6 +399,18 @@ export function ProfileClient() {
           </Section>
         )}
 
+        {/* App */}
+        {isInstallable && !isStandalone && (
+          <Section title="App">
+            <Row
+              icon={Download}
+              label="Install App"
+              value="Add UrTurn to your home screen"
+              onClick={handleInstallClick}
+            />
+          </Section>
+        )}
+
         {/* Account security */}
         <Section title="Security">
           <Row icon={Shield} label="Sign-in Method" value="GitHub OAuth" showArrow={false} />
@@ -373,6 +446,10 @@ export function ProfileClient() {
           onCancel={() => setModal(null)}
           isDestructive
         />
+      )}
+
+      {modal === "ios-install" && (
+        <IOSInstallModal onClose={() => setModal(null)} />
       )}
 
       {/* Toast */}
