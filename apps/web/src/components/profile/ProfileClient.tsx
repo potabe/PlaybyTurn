@@ -211,7 +211,7 @@ export function ProfileClient() {
     setIsUploadingAvatar(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `avatars/${user.id}.${ext}`;
+      const path = `${user.id}.${ext}`;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: uploadError } = await (supabase as any).storage
