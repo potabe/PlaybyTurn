@@ -67,23 +67,21 @@ export function AppNav() {
 
         {/* User menu */}
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <button
-              className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted transition-colors"
-              aria-label="User menu"
-              id="user-menu-btn"
-            >
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={profile?.avatar_url ?? undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="hidden sm:block text-sm font-medium max-w-24 truncate">
-                {profile?.name ?? user?.email?.split("@")[0]}
-              </span>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
+          <DropdownMenuTrigger
+            className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted transition-colors focus:outline-none"
+            aria-label="User menu"
+            id="user-menu-btn"
+          >
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={profile?.avatar_url ?? undefined} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden sm:block text-sm font-medium max-w-24 truncate">
+              {profile?.name ?? user?.email?.split("@")[0]}
+            </span>
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 rounded-xl">
             <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
