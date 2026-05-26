@@ -41,3 +41,5 @@ supabase/.branches/
 # PWA
 apps/web/public/sw.js
 apps/web/public/workbox-*.js
+
+.vercel
