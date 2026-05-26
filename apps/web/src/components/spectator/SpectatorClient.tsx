@@ -88,34 +88,43 @@ function StandingsTable({ players }: { players: Player[] }) {
   });
 
   return (
-    <div className="rounded-2xl border border-border overflow-hidden">
-      {/* Header */}
-      <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 px-4 py-2.5 bg-muted/50 border-b border-border text-xs font-bold text-muted-foreground uppercase tracking-wide">
-        <span>#</span>
-        <span>Player</span>
-        <span className="text-center">P</span>
-        <span className="text-center">W</span>
-        <span className="text-center">Pts</span>
-      </div>
+    <div className="rounded-2xl border border-border bg-white overflow-hidden">
       {sorted.length === 0 && (
         <div className="text-center py-8 text-sm text-muted-foreground">No matches yet</div>
       )}
       {sorted.map((player, i) => {
         const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
+        const losses = player.matches_played - player.matches_won;
+        const diffSign = player.point_differential > 0 ? "+" : "";
+        const rank = i + 1;
+
         return (
           <div
             key={player.id}
-            className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 px-4 py-3.5 items-center border-b border-border last:border-0 ${
-              i < 3 ? "bg-primary/2" : ""
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 ${rank <= 3 ? "bg-primary/5" : ""} border-b border-border last:border-0 hover:bg-muted/30 transition-colors`}
           >
-            <span className="text-sm w-6 text-center font-bold text-muted-foreground">
-              {medal ?? i + 1}
+            <span className="w-6 text-center text-sm font-bold text-muted-foreground flex-shrink-0">
+              {medal ?? rank}
             </span>
-            <span className="text-sm font-semibold truncate">{player.name}</span>
-            <span className="text-sm font-medium text-center text-muted-foreground">{player.matches_played}</span>
-            <span className="text-sm font-bold text-center text-primary">{player.matches_won}</span>
-            <span className="text-sm font-black text-center">{player.points_won}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate text-foreground">{player.name}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[11px] font-semibold bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                  {player.matches_won}-0-{losses} <span className="opacity-70 font-medium">(W-T-L)</span>
+                </span>
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                  player.point_differential > 0 ? "bg-green-100 text-green-700" :
+                  player.point_differential < 0 ? "bg-red-100 text-red-700" :
+                  "bg-muted text-muted-foreground"
+                }`}>
+                  Diff: {diffSign}{player.point_differential}
+                </span>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0 bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10">
+              <p className="text-sm font-black text-primary leading-tight">{player.points_won}</p>
+              <p className="text-[9px] font-black text-primary/60 uppercase tracking-widest mt-0.5">Pts</p>
+            </div>
           </div>
         );
       })}
