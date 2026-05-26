@@ -63,6 +63,38 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
   const isComplete = engine.isMatchComplete(scoreState);
   const winner = engine.getWinner(scoreState);
 
+  // ── Helper to calculate points ─────────────────────────
+  const getMatchStats = (scoreData: ScoreData, team: Team) => {
+    if (!("sport" in scoreData)) return { won: 0, lost: 0 };
+    let won = 0;
+    let lost = 0;
+
+    if (scoreData.sport === "TENNIS" || scoreData.sport === "PADEL") {
+      // Sum of games won in all sets
+      for (const set of scoreData.sets) {
+        if (team === "team1") { won += set.t1; lost += set.t2; }
+        else { won += set.t2; lost += set.t1; }
+      }
+      // Sum points from super tiebreak if it exists
+      if (scoreData.sport === "PADEL" && scoreData.superTiebreak) {
+        if (team === "team1") { won += scoreData.superTiebreak.t1; lost += scoreData.superTiebreak.t2; }
+        else { won += scoreData.superTiebreak.t2; lost += scoreData.superTiebreak.t1; }
+      }
+    } else if (scoreData.sport === "BADMINTON") {
+      for (const set of scoreData.sets) {
+        if (team === "team1") { won += set.t1; lost += set.t2; }
+        else { won += set.t2; lost += set.t1; }
+      }
+    } else if (scoreData.sport === "TABLE_TENNIS") {
+      for (const game of scoreData.games) {
+        if (team === "team1") { won += game.t1; lost += game.t2; }
+        else { won += game.t2; lost += game.t1; }
+      }
+    }
+    return { won, lost };
+  };
+
+
   // ── Mutations ──────────────────────────────────────────
   const updateScore = useMutation({
     mutationFn: async (newScoreData: ScoreData) => {
@@ -109,12 +141,19 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
         const isWinner = winnerIds.includes(playerId);
         const player = playerMap[playerId];
         if (!player) continue;
+
+        const team = (playerId === match.team1_player1_id || playerId === match.team1_player2_id) ? "team1" : "team2";
+        const stats = getMatchStats(scoreState, team);
+        const diff = stats.won - stats.lost;
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (supabase as any)
           .from("players")
           .update({
             matches_played: player.matches_played + 1,
             matches_won: player.matches_won + (isWinner ? 1 : 0),
+            points_won: (player.points_won || 0) + stats.won,
+            point_differential: (player.point_differential || 0) + diff,
             last_played_at: new Date().toISOString(),
           })
           .eq("id", playerId);
