@@ -75,10 +75,10 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
           </div>
 
           {/* Preview container */}
-          <div className="bg-slate-200 rounded-2xl p-4 flex justify-center overflow-hidden">
-            <div className="relative shadow-2xl rounded-2xl overflow-hidden" style={{ transform: 'scale(0.7)', transformOrigin: 'top center', marginBottom: variant === 'podium' ? '-120px' : variant === 'full' ? '-10px' : '0' }}>
+          <div className="bg-slate-200 rounded-2xl p-2 sm:p-4 flex justify-center overflow-x-auto scrollbar-hide">
+             <div className="shadow-2xl rounded-2xl overflow-hidden w-full max-w-[400px]">
                <ExportTemplate ref={printRef} session={session} players={players} variant={variant} />
-            </div>
+             </div>
           </div>
           <p className="text-center text-xs text-muted-foreground -mt-2">
             This is a preview. The downloaded image will be in high resolution.
