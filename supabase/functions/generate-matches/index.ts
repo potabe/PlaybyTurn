@@ -99,9 +99,51 @@ function generateFixedDoubles(
 }
 
 // ============================================================
-// MIXED DOUBLES: strict 1M + 1F per team, multi-round rotation
-// With 10 players (5M+5F) & 1 court → generates multiple rounds
+// MIXED DOUBLES AMERICANO: 1M+1F per team, rotating partners
+//
+// Works like Americano: keeps generating rounds until every
+// unique M-F partnership has played together at least once.
+//
+// Examples:
+//   5M + 5F + 1 court  → 13 rounds = 13 matches
+//   5M + 5F + 2 courts → ~7 rounds = 14 matches
+//   4M + 4F + 2 courts → ~8 rounds = 16 matches
+//
+// Each round greedily picks the best uncovered (M,F) pair
+// whose individual players have played the fewest matches,
+// ensuring balanced playtime across all players.
 // ============================================================
+
+/** Pick the best (M,F) team for a slot this round.
+ *  Prefers: (1) uncovered partnerships, (2) fewest individual matches played.
+ */
+function pickTeam(
+  males: Player[],
+  females: Player[],
+  covered: Set<string>,
+  playCount: Record<string, number>,
+  usedM: Set<string>,
+  usedF: Set<string>
+): { m: Player; f: Player } | null {
+  let best: { m: Player; f: Player } | null = null;
+  let bestScore = Infinity;
+
+  for (const m of males) {
+    if (usedM.has(m.id)) continue;
+    for (const f of females) {
+      if (usedF.has(f.id)) continue;
+      // Large penalty for already-covered partnerships so we exhaust new ones first
+      const penalty = covered.has(`${m.id}:${f.id}`) ? 100_000 : 0;
+      const score = penalty + (playCount[m.id] ?? 0) + (playCount[f.id] ?? 0);
+      if (score < bestScore) {
+        bestScore = score;
+        best = { m, f };
+      }
+    }
+  }
+  return best;
+}
+
 function generateMixedDoubles(
   players: Player[],
   courts: Court[]
@@ -116,59 +158,73 @@ function generateMixedDoubles(
   }
 
   const allMatches: MatchAssignment[] = [];
+
+  // Target: cover every unique (M, F) partnership at least once
+  const totalPartnerships = males.length * females.length;
+  const covered = new Set<string>(); // "mId:fId"
+
+  // Track how many matches each individual player has played this session
+  const playCount: Record<string, number> = {};
+  [...males, ...females].forEach((p) => { playCount[p.id] = 0; });
+
   const numCourts = courts.length;
+  let round = 1;
 
-  // Max matches schedulable per round
-  const matchesPerRound = Math.min(
-    Math.floor(males.length / 2),
-    Math.floor(females.length / 2),
-    numCourts
-  );
+  // Safety ceiling: need at most ceil(totalPartnerships / (numCourts * 2)) rounds
+  // to cover all pairs (each round covers 2 new pairs per court). Add buffer.
+  const maxRounds = Math.ceil(totalPartnerships / (numCourts * 2)) * 2 + 10;
 
-  // Generate enough rounds so all players rotate partners
-  const numRounds = Math.max(males.length, females.length);
+  while (covered.size < totalPartnerships && round <= maxRounds) {
+    const usedM = new Set<string>();
+    const usedF = new Set<string>();
+    let scheduledThisRound = 0;
 
-  // Polygon method: fix first male & first female, rotate the rest
-  const maleIds = males.map((p) => p.id);
-  const femaleIds = females.map((p) => p.id);
-  const maleFixed = maleIds.splice(0, 1)[0];
-  const femaleFixed = femaleIds.splice(0, 1)[0];
+    for (let c = 0; c < numCourts; c++) {
+      // Pick team1
+      const team1 = pickTeam(males, females, covered, playCount, usedM, usedF);
+      if (!team1) break;
 
-  for (let round = 0; round < numRounds; round++) {
-    const roundMales = [maleFixed, ...maleIds];
-    const roundFemales = [femaleFixed, ...femaleIds];
-    const usedThisRound = new Set<string>();
-
-    for (let c = 0; c < matchesPerRound; c++) {
-      const court = courts[c % numCourts];
-      const m1 = roundMales[c * 2];
-      const m2 = roundMales[c * 2 + 1];
-      const f1 = roundFemales[c * 2];
-      const f2 = roundFemales[c * 2 + 1];
-
-      if (!m1 || !m2 || !f1 || !f2) break;
-      if (usedThisRound.has(m1) || usedThisRound.has(m2) ||
-          usedThisRound.has(f1) || usedThisRound.has(f2)) continue;
+      // Pick team2: must use a DIFFERENT male and DIFFERENT female
+      const team2 = pickTeam(
+        males,
+        females,
+        covered,
+        playCount,
+        new Set([...usedM, team1.m.id]),
+        new Set([...usedF, team1.f.id])
+      );
+      if (!team2) break;
 
       allMatches.push({
-        court_id: court.id,
-        team1_player1_id: m1,
-        team1_player2_id: f1,
-        team2_player1_id: m2,
-        team2_player2_id: f2,
-        round_number: round + 1,
+        court_id: courts[c].id,
+        team1_player1_id: team1.m.id,
+        team1_player2_id: team1.f.id,
+        team2_player1_id: team2.m.id,
+        team2_player2_id: team2.f.id,
+        round_number: round,
       });
-      usedThisRound.add(m1); usedThisRound.add(m2);
-      usedThisRound.add(f1); usedThisRound.add(f2);
+
+      // Mark players as used in this round
+      usedM.add(team1.m.id); usedM.add(team2.m.id);
+      usedF.add(team1.f.id); usedF.add(team2.f.id);
+
+      // Update global play counts and covered partnerships
+      [team1.m.id, team1.f.id, team2.m.id, team2.f.id].forEach(
+        (id) => { playCount[id] = (playCount[id] ?? 0) + 1; }
+      );
+      covered.add(`${team1.m.id}:${team1.f.id}`);
+      covered.add(`${team2.m.id}:${team2.f.id}`);
+      scheduledThisRound++;
     }
 
-    // Rotate for next round
-    if (maleIds.length > 0) { const l = maleIds.pop()!; maleIds.unshift(l); }
-    if (femaleIds.length > 0) { const l = femaleIds.pop()!; femaleIds.unshift(l); }
+    if (scheduledThisRound === 0) break; // No progress possible
+    round++;
   }
 
   if (allMatches.length === 0) {
-    warnings.push("Could not generate Mixed Doubles schedule. Check player count.");
+    warnings.push(
+      "Could not generate Mixed Doubles schedule. Check player count and gender balance."
+    );
   }
 
   return { matches: allMatches, resting: [], warnings };
@@ -191,21 +247,13 @@ function generateAmericano(
     return { matches: [], resting: players, warnings };
   }
 
-  // Americano round-robin: each player partners with every other player
-  // Using social golfer pairing for doubles
   const allMatches: MatchAssignment[] = [];
   const ids = players.map((p) => p.id);
 
-  // For Americano, generate round by round pairings
-  // Each round: pair players into 2-person teams, then match teams
   const numCourts = courts.length;
-  const playersPerRound = numCourts * 4;
-  const roundQueue = buildRotationQueue(players);
 
-  // Generate pairs using round-robin tournament scheduling
   let list = [...ids];
   const numRounds = n % 2 === 0 ? n - 1 : n;
-  // Fixed element for even rotation (polygon method)
   const fixed = n % 2 === 0 ? list.splice(0, 1)[0] : null;
 
   for (let round = 0; round < numRounds; round++) {
@@ -217,7 +265,6 @@ function generateAmericano(
       pairs.push([roundPlayers[i], roundPlayers[roundPlayers.length - 1 - i]]);
     }
 
-    // Match pairs against each other per court
     for (let c = 0; c < Math.min(numCourts, Math.floor(pairs.length / 2)); c++) {
       const team1 = pairs[c * 2];
       const team2 = pairs[c * 2 + 1];
@@ -233,7 +280,6 @@ function generateAmericano(
       });
     }
 
-    // Rotate (polygon method): move last element to position 1
     if (list.length > 0) {
       const last = list.pop()!;
       list.unshift(last);
@@ -264,7 +310,6 @@ serve(async (req: Request) => {
     const body: GenerateMatchesRequest = await req.json();
     const { session_id, players, courts, format } = body;
 
-    // Validate
     if (!session_id || !players?.length || !courts?.length || !format) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
@@ -275,10 +320,11 @@ serve(async (req: Request) => {
     let result: { matches: MatchAssignment[]; resting: Player[]; warnings: string[] };
 
     switch (format as FormatType) {
-      case "SINGLES":
+      case "SINGLES": {
         const singlesResult = generateSingles(players, courts);
         result = { ...singlesResult, warnings: [] };
         break;
+      }
       case "FIXED_DOUBLES":
         result = generateFixedDoubles(players, courts);
         break;
@@ -295,7 +341,6 @@ serve(async (req: Request) => {
         );
     }
 
-    // Insert matches into DB
     if (result.matches.length > 0) {
       const matchRows = result.matches.map((m) => ({
         session_id,
@@ -318,7 +363,6 @@ serve(async (req: Request) => {
         throw new Error(`Failed to insert matches: ${insertError.message}`);
       }
 
-      // Update session status to ACTIVE
       await supabase
         .from("sessions")
         .update({ status: "ACTIVE" })
