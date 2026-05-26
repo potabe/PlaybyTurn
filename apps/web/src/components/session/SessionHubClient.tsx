@@ -19,20 +19,32 @@ import type { Session, Player, Court, Match } from "@/types/session";
 // ─── Leaderboard row ───────────────────────────────────────
 function LeaderboardRow({ player, rank }: { player: Player; rank: number }) {
   const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+  const losses = player.matches_played - player.matches_won;
+  const diffSign = player.point_differential > 0 ? "+" : "";
+
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 ${rank <= 3 ? "bg-primary/3" : ""} border-b border-border last:border-0`}>
-      <span className="w-6 text-center text-sm font-bold text-muted-foreground">
+    <div className={`flex items-center gap-3 px-4 py-3 ${rank <= 3 ? "bg-primary/5" : ""} border-b border-border last:border-0 hover:bg-muted/30 transition-colors`}>
+      <span className="w-6 text-center text-sm font-bold text-muted-foreground flex-shrink-0">
         {medal ?? rank}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate">{player.name}</p>
-        <p className="text-xs text-muted-foreground">
-          {player.matches_played} played · {player.matches_won} won
-        </p>
+        <p className="text-sm font-bold truncate text-foreground">{player.name}</p>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-[11px] font-semibold bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+            {player.matches_won}-0-{losses} <span className="opacity-70 font-medium">(W-T-L)</span>
+          </span>
+          <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+            player.point_differential > 0 ? "bg-green-100 text-green-700" :
+            player.point_differential < 0 ? "bg-red-100 text-red-700" :
+            "bg-muted text-muted-foreground"
+          }`}>
+            Diff: {diffSign}{player.point_differential}
+          </span>
+        </div>
       </div>
-      <div className="text-right flex-shrink-0">
-        <p className="text-sm font-black">{player.points_won}</p>
-        <p className="text-xs text-muted-foreground">pts</p>
+      <div className="text-right flex-shrink-0 bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10">
+        <p className="text-sm font-black text-primary leading-tight">{player.points_won}</p>
+        <p className="text-[9px] font-black text-primary/60 uppercase tracking-widest mt-0.5">Pts</p>
       </div>
     </div>
   );
