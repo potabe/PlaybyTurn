@@ -378,6 +378,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const router = useRouter();
   const queryClient = useQueryClient();
   const [endMode, setEndMode] = useState<EndMode | null>(null);
+  const [selectedCourtId, setSelectedCourtId] = useState<string | "all">("all");
 
   const { data: session } = useQuery({
     queryKey: ["session", initialSession.id],
@@ -458,10 +459,13 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   });
 
   const courtMap = Object.fromEntries((courts ?? []).map((c) => [c.id, c]));
-  const liveMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
-  const doneMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
-  const allDone = liveMatches.length === 0 && (matches ?? []).length > 0;
+  const allLiveMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
+  const allDoneMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
+  const allDone = allLiveMatches.length === 0 && (matches ?? []).length > 0;
   const isActive = session?.status === "ACTIVE";
+
+  const liveMatches = allLiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
+  const doneMatches = allDoneMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
 
   const sortedPlayers = [...(players ?? [])].sort((a, b) => {
     if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
@@ -510,7 +514,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
       {isActive && (matches ?? []).length > 0 && (
         <EndSessionBar
           allDone={allDone}
-          pendingCount={liveMatches.length}
+          pendingCount={allLiveMatches.length}
           onEndClick={(mode) => setEndMode(mode)}
         />
       )}
@@ -531,10 +535,36 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
 
         {/* Matches tab */}
         <TabsContent value="matches" className="space-y-3 mt-4">
+          
+          {/* Court Filter */}
+          {courts && courts.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-2 snap-x scrollbar-hide">
+              <button
+                onClick={() => setSelectedCourtId("all")}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors snap-start ${
+                  selectedCourtId === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                All Courts
+              </button>
+              {courts.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCourtId(c.id)}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors snap-start ${
+                    selectedCourtId === c.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+
           {liveMatches.length === 0 && doneMatches.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <p className="text-2xl mb-2">🎾</p>
-              <p className="text-sm font-medium">No matches generated yet</p>
+              <p className="text-sm font-medium">No matches {selectedCourtId !== "all" ? "on this court" : "generated yet"}</p>
             </div>
           )}
           {liveMatches.map((m) => (
@@ -572,7 +602,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         {endMode && (
           <EndSessionModal
             mode={endMode}
-            pendingCount={liveMatches.length}
+            pendingCount={allLiveMatches.length}
             onConfirm={() => endSession.mutate(endMode)}
             onCancel={() => setEndMode(null)}
             isPending={endSession.isPending}
