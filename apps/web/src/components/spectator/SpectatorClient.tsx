@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -127,6 +127,7 @@ function StandingsTable({ players }: { players: Player[] }) {
 export function SpectatorClient({ session, initialPlayers, initialCourts, initialMatches }: Props) {
   const supabase = createClient();
   const queryClient = useQueryClient();
+  const [selectedCourtId, setSelectedCourtId] = useState<string | "all">("all");
 
   // Data queries
   const { data: players } = useQuery({
@@ -179,7 +180,8 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   }, [session.id, supabase, queryClient]);
 
   const courtMap = Object.fromEntries((courts ?? []).map((c) => [c.id, c]));
-  const activeMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
+  const allActiveMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
+  const activeMatches = allActiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
   const completedMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
 
   return (
@@ -216,16 +218,50 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
         </motion.div>
 
         {/* Live match carousel */}
-        {activeMatches.length > 0 && (
+        {allActiveMatches.length > 0 && (
           <section>
             <div className="flex items-center gap-2 mb-3">
               <Activity className="h-4 w-4 text-green-600" />
               <h2 className="text-sm font-bold text-green-700 uppercase tracking-wider">On Court</h2>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
-              {activeMatches.map((m) => (
-                <LiveMatchCard key={m.id} match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} />
-              ))}
+            
+            {/* Court Filter */}
+            {courts && courts.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-3 mb-1 snap-x scrollbar-hide -mx-4 px-4">
+                <button
+                  onClick={() => setSelectedCourtId("all")}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors snap-start ${
+                    selectedCourtId === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  All Courts
+                </button>
+                {courts.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedCourtId(c.id)}
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors snap-start ${
+                      selectedCourtId === c.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+              {activeMatches.length === 0 ? (
+                 <div className="text-center py-6 text-muted-foreground text-sm w-full">
+                   No matches on this court
+                 </div>
+              ) : (
+                activeMatches.map((m) => (
+                  <div key={m.id} className="snap-start">
+                    <LiveMatchCard match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} />
+                  </div>
+                ))
+              )}
             </div>
           </section>
         )}
