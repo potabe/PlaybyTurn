@@ -27,34 +27,94 @@ function buildRotationQueue(players: Player[]): Player[] {
 }
 
 // ============================================================
-// SINGLES: 1v1 — dequeue top 2 per court
+// SINGLES: 1v1 — full round-robin
+//
+// Generates all unique 1v1 matchups and schedules them using
+// the max-rest greedy algorithm to ensure players get rest
+// between matches.
 // ============================================================
 function generateSingles(
   players: Player[],
   courts: Court[]
-): { matches: MatchAssignment[]; resting: Player[] } {
-  const queue = buildRotationQueue(players);
-  const matches: MatchAssignment[] = [];
-  const usedPlayerIds = new Set<string>();
-
-  for (const court of courts) {
-    const available = queue.filter((p) => !usedPlayerIds.has(p.id));
-    if (available.length < 2) break;
-    const [p1, p2] = available;
-    matches.push({
-      court_id: court.id,
-      team1_player1_id: p1.id,
-      team1_player2_id: null,
-      team2_player1_id: p2.id,
-      team2_player2_id: null,
-      round_number: 1,
-    });
-    usedPlayerIds.add(p1.id);
-    usedPlayerIds.add(p2.id);
+): { matches: MatchAssignment[]; resting: Player[]; warnings: string[] } {
+  const warnings: string[] = [];
+  if (players.length < 2) {
+    warnings.push("Need at least 2 players for Singles.");
+    return { matches: [], resting: players, warnings };
   }
 
-  const resting = players.filter((p) => !usedPlayerIds.has(p.id));
-  return { matches, resting };
+  const allMatches: MatchAssignment[] = [];
+  const numCourts = courts.length;
+
+  // Generate all unique 1v1 matchups: C(n, 2)
+  const matchups: [Player, Player][] = [];
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i + 1; j < players.length; j++) {
+      matchups.push([players[i], players[j]]);
+    }
+  }
+
+  // Max-rest greedy scheduler
+  const lastPlayedRound: Record<string, number> = {};
+  players.forEach((p) => {
+    lastPlayedRound[p.id] = 0;
+  });
+
+  const scheduled = new Set<number>(); // indices into matchups[]
+  let round = 1;
+
+  while (scheduled.size < matchups.length) {
+    const usedThisRound = new Set<string>();
+    let matchesThisRound = 0;
+
+    for (let c = 0; c < numCourts; c++) {
+      let bestIdx = -1;
+      let bestScore = -1;
+
+      for (let idx = 0; idx < matchups.length; idx++) {
+        if (scheduled.has(idx)) continue;
+        const [p1, p2] = matchups[idx];
+
+        // Skip if any player is already in a match this round
+        if (usedThisRound.has(p1.id) || usedThisRound.has(p2.id)) continue;
+
+        // Rest score: higher = both players have been waiting longer
+        const score =
+          (round - (lastPlayedRound[p1.id] ?? 0)) +
+          (round - (lastPlayedRound[p2.id] ?? 0));
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestIdx = idx;
+        }
+      }
+
+      if (bestIdx === -1) break; // no valid matchup for this court slot
+
+      const [p1, p2] = matchups[bestIdx];
+      allMatches.push({
+        court_id: courts[c % numCourts].id,
+        team1_player1_id: p1.id,
+        team1_player2_id: null,
+        team2_player1_id: p2.id,
+        team2_player2_id: null,
+        round_number: round,
+      });
+
+      // Update state
+      usedThisRound.add(p1.id);
+      usedThisRound.add(p2.id);
+      lastPlayedRound[p1.id] = round;
+      lastPlayedRound[p2.id] = round;
+      scheduled.add(bestIdx);
+      matchesThisRound++;
+    }
+
+    if (matchesThisRound === 0) break; // safety: no progress
+    round++;
+  }
+
+  return { matches: allMatches, resting: [], warnings };
 }
 
 // ============================================================
@@ -413,11 +473,9 @@ serve(async (req: Request) => {
     let result: { matches: MatchAssignment[]; resting: Player[]; warnings: string[] };
 
     switch (format as FormatType) {
-      case "SINGLES": {
-        const singlesResult = generateSingles(players, courts);
-        result = { ...singlesResult, warnings: [] };
+      case "SINGLES":
+        result = generateSingles(players, courts);
         break;
-      }
       case "FIXED_DOUBLES":
         result = generateFixedDoubles(players, courts, body.team_assignments);
         break;
