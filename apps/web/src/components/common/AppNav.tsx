@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, BarChart3, LogOut, Settings, ChevronDown } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, UserCircle, ChevronDown } from "lucide-react";
 
 
 export function AppNav() {
@@ -105,9 +105,13 @@ export function AppNav() {
               <BarChart3 className="h-4 w-4" />
               Player Stats
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2 text-muted-foreground cursor-pointer">
-              <Settings className="h-4 w-4" />
-              Settings
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => router.push("/profile")}
+              id="dropdown-profile-link"
+            >
+              <UserCircle className="h-4 w-4" />
+              Profile & Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
