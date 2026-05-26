@@ -11,6 +11,7 @@ import { SportStep } from "@/components/session/steps/SportStep";
 import { FormatStep } from "@/components/session/steps/FormatStep";
 import { PlayersStep } from "@/components/session/steps/PlayersStep";
 import { CourtsStep } from "@/components/session/steps/CourtsStep";
+import { TeamsStep } from "@/components/session/steps/TeamsStep";
 import { ReviewStep } from "@/components/session/steps/ReviewStep";
 import { ArrowLeft, X } from "lucide-react";
 import Link from "next/link";
@@ -23,25 +24,26 @@ export interface PlayerInput {
   gender: GenderType;
 }
 
+export interface TeamAssignmentInput {
+  player1_id: string; // local ID (male)
+  player2_id: string; // local ID (female)
+}
+
 export interface SetupForm {
   title: string;
   sport: SportType | null;
   format: FormatType | null;
   players: PlayerInput[];
   courtNames: string[];
+  teamAssignments: TeamAssignmentInput[]; // used for FIXED_DOUBLES
 }
 
-// ─── Steps config ─────────────────────────────────────────
-const STEPS = ["Sport", "Format", "Players", "Courts", "Review"] as const;
-type Step = (typeof STEPS)[number];
+// ─── Steps ────────────────────────────────────────────────
+// "Teams" step is only shown for FIXED_DOUBLES
+type Step = "Sport" | "Format" | "Players" | "Courts" | "Teams" | "Review";
 
-const STEP_INDEX: Record<Step, number> = {
-  Sport: 0,
-  Format: 1,
-  Players: 2,
-  Courts: 3,
-  Review: 4,
-};
+const BASE_STEPS: Step[] = ["Sport", "Format", "Players", "Courts", "Review"];
+const FIXED_STEPS: Step[] = ["Sport", "Format", "Players", "Courts", "Teams", "Review"];
 
 // ─── Slide animation ──────────────────────────────────────
 const easeOut: Easing = [0.0, 0.0, 0.2, 1.0];
@@ -72,7 +74,13 @@ export function SessionSetupWizard() {
       { id: crypto.randomUUID(), name: "", gender: "MALE" },
     ],
     courtNames: ["Court 1"],
+    teamAssignments: [],
   });
+
+  // Effective steps based on format
+  const steps: Step[] = form.format === "FIXED_DOUBLES" ? FIXED_STEPS : BASE_STEPS;
+  const stepIdx = steps.indexOf(currentStep);
+  const progress = ((stepIdx + 1) / steps.length) * 100;
 
   // ─── Mutation: create session + call Edge Function ──────
   const createSession = useMutation({
@@ -85,7 +93,8 @@ export function SessionSetupWizard() {
 
       const spectatorCode = generateSpectatorCode();
       const sessionTitle =
-        form.title.trim() || `${form.sport} Session — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+        form.title.trim() ||
+        `${form.sport} Session — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 
       // 1. Create session
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,15 +114,13 @@ export function SessionSetupWizard() {
       const sessionData = session as { id: string } | null;
       if (!sessionData) throw new Error("Failed to create session");
 
-
-      // 2. Create players
-      const playerRows = form.players
-        .filter((p) => p.name.trim())
-        .map((p) => ({
-          session_id: sessionData.id,
-          name: p.name.trim(),
-          gender: p.gender,
-        }));
+      // 2. Create players (only non-empty names)
+      const namedPlayers = form.players.filter((p) => p.name.trim());
+      const playerRows = namedPlayers.map((p) => ({
+        session_id: sessionData.id,
+        name: p.name.trim(),
+        gender: p.gender,
+      }));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: players, error: playersError } = await (supabase as any)
         .from("players")
@@ -135,8 +142,24 @@ export function SessionSetupWizard() {
         .select();
       if (courtsError) throw new Error(courtsError.message);
 
+      // 4. Resolve team assignments: local temp IDs → real DB player IDs
+      //    namedPlayers[i] corresponds to players[i] (same insertion order)
+      const localToDbId = new Map<string, string>();
+      namedPlayers.forEach((p, i) => {
+        if (players[i]) localToDbId.set(p.id, players[i].id);
+      });
 
-      // 4. Call Edge Function to generate matches
+      const resolvedTeams =
+        form.format === "FIXED_DOUBLES" && form.teamAssignments.length >= 2
+          ? form.teamAssignments
+              .map((ta) => ({
+                player1_id: localToDbId.get(ta.player1_id) ?? "",
+                player2_id: localToDbId.get(ta.player2_id) ?? "",
+              }))
+              .filter((ta) => ta.player1_id && ta.player2_id)
+          : undefined;
+
+      // 5. Call Edge Function to generate matches
       const { data: matchResult, error: fnError } = await supabase.functions.invoke(
         "generate-matches",
         {
@@ -146,6 +169,7 @@ export function SessionSetupWizard() {
             courts,
             sport: form.sport,
             format: form.format,
+            ...(resolvedTeams ? { team_assignments: resolvedTeams } : {}),
           },
         }
       );
@@ -161,23 +185,25 @@ export function SessionSetupWizard() {
 
   // ─── Navigation ─────────────────────────────────────────
   function goToStep(step: Step) {
-    const dir = STEP_INDEX[step] > STEP_INDEX[currentStep] ? 1 : -1;
-    setDirection(dir);
+    const currIdx = steps.indexOf(currentStep);
+    const nextIdx = steps.indexOf(step);
+    setDirection(nextIdx > currIdx ? 1 : -1);
+    // If switching format mid-wizard, reset teamAssignments
+    if (step === "Teams" && form.teamAssignments.length > 0) {
+      // keep existing assignments
+    }
     setCurrentStep(step);
   }
 
   function next() {
-    const idx = STEP_INDEX[currentStep];
-    if (idx < STEPS.length - 1) goToStep(STEPS[idx + 1]);
+    const idx = steps.indexOf(currentStep);
+    if (idx < steps.length - 1) goToStep(steps[idx + 1]);
   }
 
   function back() {
-    const idx = STEP_INDEX[currentStep];
-    if (idx > 0) goToStep(STEPS[idx - 1]);
+    const idx = steps.indexOf(currentStep);
+    if (idx > 0) goToStep(steps[idx - 1]);
   }
-
-  const stepIdx = STEP_INDEX[currentStep];
-  const progress = ((stepIdx + 1) / STEPS.length) * 100;
 
   // ─── Render ──────────────────────────────────────────────
   return (
@@ -196,7 +222,7 @@ export function SessionSetupWizard() {
 
             <div className="text-center">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                Step {stepIdx + 1} of {STEPS.length}
+                Step {stepIdx + 1} of {steps.length}
               </p>
               <p className="text-sm font-bold">{currentStep}</p>
             </div>
@@ -244,6 +270,9 @@ export function SessionSetupWizard() {
             )}
             {currentStep === "Courts" && (
               <CourtsStep form={form} setForm={setForm} onNext={next} />
+            )}
+            {currentStep === "Teams" && (
+              <TeamsStep form={form} setForm={setForm} onNext={next} />
             )}
             {currentStep === "Review" && (
               <ReviewStep

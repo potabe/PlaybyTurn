@@ -8,7 +8,9 @@ import type {
   Player,
   Court,
   FormatType,
+  TeamAssignment,
 } from "../_shared/types.ts";
+
 
 // ============================================================
 // Rotation Queue: sorts players by priority rules
@@ -62,13 +64,93 @@ function generateSingles(
 }
 
 // ============================================================
-// FIXED DOUBLES: static team pairs rotate as units
+// FIXED DOUBLES: pre-assigned teams rotate round-robin
+// If team_assignments provided: full round-robin between all teams
+// Otherwise: fallback to rotation queue (auto-pair sequentially)
 // ============================================================
 function generateFixedDoubles(
   players: Player[],
-  courts: Court[]
+  courts: Court[],
+  teamAssignments?: TeamAssignment[]
 ): { matches: MatchAssignment[]; resting: Player[]; warnings: string[] } {
   const warnings: string[] = [];
+
+  // ── Case 1: manual team assignments provided ──────────────
+  if (teamAssignments && teamAssignments.length >= 2) {
+    const playerMap = Object.fromEntries(players.map((p) => [p.id, p]));
+    const teams = teamAssignments.filter(
+      (t) => playerMap[t.player1_id] && playerMap[t.player2_id]
+    );
+
+    if (teams.length < 2) {
+      warnings.push("Need at least 2 valid teams for Fixed Doubles.");
+      return { matches: [], resting: players, warnings };
+    }
+
+    // Round-robin: every team plays against every other team
+    const allMatches: MatchAssignment[] = [];
+    const numCourts = courts.length;
+    let round = 1;
+    let courtIdx = 0;
+
+    // Generate all unique team vs team pairings
+    const matchups: [TeamAssignment, TeamAssignment][] = [];
+    for (let i = 0; i < teams.length; i++) {
+      for (let j = i + 1; j < teams.length; j++) {
+        matchups.push([teams[i], teams[j]]);
+      }
+    }
+
+    // Schedule matchups into rounds — pack as many courts per round as possible
+    // without a team playing twice in the same round
+    const scheduled = new Array<boolean>(matchups.length).fill(false);
+    let remaining = matchups.length;
+
+    while (remaining > 0) {
+      const usedTeamsThisRound = new Set<string>();
+      let matchesThisRound = 0;
+
+      for (let idx = 0; idx < matchups.length; idx++) {
+        if (scheduled[idx]) continue;
+        const [t1, t2] = matchups[idx];
+        // Check no player conflicts in this round
+        if (
+          usedTeamsThisRound.has(t1.player1_id) ||
+          usedTeamsThisRound.has(t1.player2_id) ||
+          usedTeamsThisRound.has(t2.player1_id) ||
+          usedTeamsThisRound.has(t2.player2_id)
+        ) continue;
+
+        const court = courts[courtIdx % numCourts];
+        allMatches.push({
+          court_id: court.id,
+          team1_player1_id: t1.player1_id,
+          team1_player2_id: t1.player2_id,
+          team2_player1_id: t2.player1_id,
+          team2_player2_id: t2.player2_id,
+          round_number: round,
+        });
+
+        usedTeamsThisRound.add(t1.player1_id);
+        usedTeamsThisRound.add(t1.player2_id);
+        usedTeamsThisRound.add(t2.player1_id);
+        usedTeamsThisRound.add(t2.player2_id);
+        scheduled[idx] = true;
+        remaining--;
+        courtIdx++;
+        matchesThisRound++;
+
+        if (matchesThisRound >= numCourts) break; // courts full for this round
+      }
+
+      if (matchesThisRound === 0) break; // safety
+      round++;
+    }
+
+    return { matches: allMatches, resting: [], warnings };
+  }
+
+  // ── Case 2: fallback — auto-pair by rotation queue ────────
   if (players.length < 4) {
     warnings.push("Need at least 4 players for Fixed Doubles.");
     return { matches: [], resting: players, warnings };
@@ -326,8 +408,9 @@ serve(async (req: Request) => {
         break;
       }
       case "FIXED_DOUBLES":
-        result = generateFixedDoubles(players, courts);
+        result = generateFixedDoubles(players, courts, body.team_assignments);
         break;
+
       case "MIXED_DOUBLES":
         result = generateMixedDoubles(players, courts);
         break;

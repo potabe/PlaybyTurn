@@ -29,12 +29,18 @@ export interface Court {
   name: string;
 }
 
+export interface TeamAssignment {
+  player1_id: string; // male
+  player2_id: string; // female
+}
+
 export interface GenerateMatchesRequest {
   session_id: string;
   players: Player[];
   courts: Court[];
   sport: SportType;
   format: FormatType;
+  team_assignments?: TeamAssignment[]; // for FIXED_DOUBLES
 }
 
 export interface MatchAssignment {
