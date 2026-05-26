@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Share2, Trophy, Activity, Clock, ChevronRight, Check,
-  FlagOff, Flag, AlertTriangle, X,
+  FlagOff, Flag, AlertTriangle, X, Image as ImageIcon
 } from "lucide-react";
+import { ShareResultModal } from "./ShareResultModal";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
 
@@ -399,6 +400,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const queryClient = useQueryClient();
   const [endMode, setEndMode] = useState<EndMode | null>(null);
   const [selectedCourtId, setSelectedCourtId] = useState<string | "all">("all");
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ["session", initialSession.id],
@@ -539,6 +541,28 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         />
       )}
 
+      {/* ── Share results bar (only when COMPLETED) ── */}
+      {session?.status === "COMPLETED" && (
+        <div className="rounded-2xl border bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-blue-900 flex items-center gap-1.5">
+                <Trophy className="h-4 w-4 text-yellow-500" /> Session Completed!
+              </p>
+              <p className="text-xs text-blue-700/80 mt-0.5">
+                Share the final standings with players.
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowShareModal(true)}
+              className="flex-shrink-0 h-10 rounded-xl font-bold text-white text-sm bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-200"
+            >
+              <ImageIcon className="h-4 w-4 mr-1.5" /> Export Image
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <Tabs defaultValue="matches">
         <TabsList className="w-full rounded-xl h-10">
@@ -629,6 +653,16 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
           />
         )}
       </AnimatePresence>
+
+      {/* Share Results Modal */}
+      {session && players && (
+        <ShareResultModal
+          open={showShareModal}
+          onOpenChange={setShowShareModal}
+          session={session}
+          players={players}
+        />
+      )}
     </div>
   );
 }
