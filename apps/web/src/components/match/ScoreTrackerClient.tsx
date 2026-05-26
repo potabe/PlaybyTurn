@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { getScoringEngine } from "@/lib/scoring";
-import { ArrowLeft, Minus, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Minus, CheckCircle2, AlertTriangle, Pencil } from "lucide-react";
 
 
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
   );
   const [history, setHistory] = useState<ScoreData[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [tapFeedback, setTapFeedback] = useState<Team | null>(null);
 
   // Screen wake lock
@@ -200,6 +201,13 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
     updateScore.mutate(state);
   }, [history, scoreState, engine, updateScore]);
 
+  const handleManualEditSave = useCallback((newScore: ScoreData) => {
+    setHistory((h) => [...h, scoreState]);
+    setScoreState(newScore);
+    updateScore.mutate(newScore);
+    setShowEditModal(false);
+  }, [scoreState, updateScore]);
+
   // ─── Render ───────────────────────────────────────────
   return (
     <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
@@ -207,19 +215,28 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       <div className="flex items-center justify-between px-4 pt-safe h-14 bg-white border-b border-border flex-shrink-0 z-10">
         <button
           onClick={() => router.push(`/sessions/${match.session_id}`)}
-          className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-16"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
-        <div className="text-center">
+        <div className="text-center flex-1">
           <p className="text-xs text-muted-foreground font-medium">{SPORT_LABELS[session.sport]}</p>
           {display.currentSetDetail && (
             <p className="text-xs font-bold text-primary">{display.currentSetDetail}</p>
           )}
         </div>
-        {/* Spacer to balance the Back button */}
-        <div className="w-10" />
+        <div className="w-16 flex justify-end">
+          {match.status !== "COMPLETED" && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground transition-colors"
+              aria-label="Edit score manually"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Previous set scores ── */}
@@ -431,6 +448,169 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Edit Score Modal ── */}
+      <AnimatePresence>
+        {showEditModal && (
+          <EditScoreModal
+            scoreState={scoreState}
+            onSave={handleManualEditSave}
+            onCancel={() => setShowEditModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+// ─── Edit Score Modal Component ─────────────────────────────
+function EditScoreModal({
+  scoreState,
+  onSave,
+  onCancel,
+}: {
+  scoreState: ScoreData;
+  onSave: (newScore: ScoreData) => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState<ScoreData>(JSON.parse(JSON.stringify(scoreState)));
+
+  if (!("sport" in draft)) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 400 }}
+        className="bg-white rounded-3xl w-full max-w-sm overflow-hidden flex flex-col max-h-[85vh] shadow-2xl"
+      >
+        <div className="p-5 border-b border-border flex items-center justify-between bg-muted/10">
+          <h3 className="font-black text-lg">Edit Score</h3>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-2 py-1 rounded-full">
+            {draft.sport.replace("_", " ")}
+          </p>
+        </div>
+        
+        <div className="p-5 overflow-y-auto space-y-6 flex-1">
+          {/* Badminton */}
+          {draft.sport === "BADMINTON" && (
+            <div className="space-y-4">
+               {draft.sets.map((set: any, i: number) => (
+                 <div key={i} className="flex items-center justify-between gap-4">
+                   <span className="text-sm font-bold w-12 text-muted-foreground">Set {i+1}</span>
+                   <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary focus:ring-0 outline-none transition-colors" value={set.t1} onChange={e => {
+                     const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.sets[i].t1 = parseInt(e.target.value)||0; setDraft(newDraft);
+                   }} />
+                   <span className="font-black text-muted-foreground">-</span>
+                   <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary focus:ring-0 outline-none transition-colors" value={set.t2} onChange={e => {
+                     const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.sets[i].t2 = parseInt(e.target.value)||0; setDraft(newDraft);
+                   }} />
+                 </div>
+               ))}
+               <Button variant="outline" className="w-full border-dashed h-11 rounded-xl font-bold" onClick={() => {
+                 const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.sets.push({ t1: 0, t2: 0 }); setDraft(newDraft);
+               }}>+ Add Set</Button>
+            </div>
+          )}
+
+          {/* Table Tennis */}
+          {draft.sport === "TABLE_TENNIS" && (
+            <div className="space-y-4">
+               {draft.games.map((game: any, i: number) => (
+                 <div key={i} className="flex items-center justify-between gap-4">
+                   <span className="text-sm font-bold w-16 text-muted-foreground">Game {i+1}</span>
+                   <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={game.t1} onChange={e => {
+                     const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.games[i].t1 = parseInt(e.target.value)||0; setDraft(newDraft);
+                   }} />
+                   <span className="font-black text-muted-foreground">-</span>
+                   <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={game.t2} onChange={e => {
+                     const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.games[i].t2 = parseInt(e.target.value)||0; setDraft(newDraft);
+                   }} />
+                 </div>
+               ))}
+               <Button variant="outline" className="w-full border-dashed h-11 rounded-xl font-bold" onClick={() => {
+                 const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.games.push({ t1: 0, t2: 0 }); setDraft(newDraft);
+               }}>+ Add Game</Button>
+            </div>
+          )}
+
+          {/* Tennis/Padel */}
+          {(draft.sport === "TENNIS" || draft.sport === "PADEL") && (
+            <div className="space-y-6">
+               <div className="space-y-4">
+                 <h4 className="font-bold text-[10px] text-primary uppercase tracking-widest bg-primary/10 w-fit px-2 py-1 rounded">Sets (Games Won)</h4>
+                 {draft.sets.map((set: any, i: number) => (
+                   <div key={i} className="flex items-center justify-between gap-4">
+                     <span className="text-sm font-bold w-12 text-muted-foreground">Set {i+1}</span>
+                     <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={set.t1} onChange={e => {
+                       const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.sets[i].t1 = parseInt(e.target.value)||0; setDraft(newDraft);
+                     }} />
+                     <span className="font-black text-muted-foreground">-</span>
+                     <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={set.t2} onChange={e => {
+                       const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.sets[i].t2 = parseInt(e.target.value)||0; setDraft(newDraft);
+                     }} />
+                   </div>
+                 ))}
+                 <Button variant="outline" className="w-full border-dashed h-11 rounded-xl font-bold" onClick={() => {
+                   const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.sets.push({ t1: 0, t2: 0, tiebreak: false }); setDraft(newDraft);
+                 }}>+ Add Set</Button>
+               </div>
+
+               <div className="space-y-4 pt-5 border-t border-border">
+                 <h4 className="font-bold text-[10px] text-primary uppercase tracking-widest bg-primary/10 w-fit px-2 py-1 rounded">Current Points (0=0, 1=15, 2=30, 3=40, 4=Ad)</h4>
+                 <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-bold w-12 text-muted-foreground">Pts</span>
+                    <input type="number" min={0} max={4} className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={(draft as any).points.t1} onChange={e => {
+                      const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.points.t1 = parseInt(e.target.value) as any; setDraft(newDraft);
+                    }} />
+                    <span className="font-black text-muted-foreground">-</span>
+                    <input type="number" min={0} max={4} className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={(draft as any).points.t2} onChange={e => {
+                      const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.points.t2 = parseInt(e.target.value) as any; setDraft(newDraft);
+                    }} />
+                 </div>
+               </div>
+
+               {draft.sport === "PADEL" && (
+                 <div className="space-y-4 pt-5 border-t border-border">
+                   <div className="flex justify-between items-center">
+                     <h4 className="font-bold text-[10px] text-primary uppercase tracking-widest bg-primary/10 w-fit px-2 py-1 rounded">Super Tiebreak</h4>
+                     <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold" onClick={() => {
+                        const newDraft = JSON.parse(JSON.stringify(draft));
+                        if (newDraft.superTiebreak) newDraft.superTiebreak = null;
+                        else newDraft.superTiebreak = { t1: 0, t2: 0 };
+                        setDraft(newDraft);
+                     }}>{(draft as any).superTiebreak ? "Remove" : "Enable"}</Button>
+                   </div>
+                   {(draft as any).superTiebreak && (
+                     <div className="flex items-center justify-between gap-4">
+                        <span className="text-sm font-bold w-12 text-muted-foreground">STB</span>
+                        <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={(draft as any).superTiebreak.t1} onChange={e => {
+                          const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.superTiebreak.t1 = parseInt(e.target.value)||0; setDraft(newDraft);
+                        }} />
+                        <span className="font-black text-muted-foreground">-</span>
+                        <input type="number" className="flex-1 min-w-0 p-3 text-center border-2 border-border rounded-xl font-black text-xl focus:border-primary outline-none transition-colors" value={(draft as any).superTiebreak.t2} onChange={e => {
+                          const newDraft = JSON.parse(JSON.stringify(draft)); newDraft.superTiebreak.t2 = parseInt(e.target.value)||0; setDraft(newDraft);
+                        }} />
+                     </div>
+                   )}
+                 </div>
+               )}
+            </div>
+          )}
+        </div>
+        
+        <div className="p-5 border-t border-border flex gap-3 bg-muted/10">
+           <Button variant="outline" className="flex-1 h-12 rounded-xl font-bold bg-white" onClick={onCancel}>Cancel</Button>
+           <Button className="flex-1 h-12 rounded-xl font-black bg-primary text-primary-foreground shadow-md hover:shadow-lg transition-all" onClick={() => onSave(draft)}>Save Changes</Button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
