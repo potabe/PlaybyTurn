@@ -99,63 +99,79 @@ function generateFixedDoubles(
 }
 
 // ============================================================
-// MIXED DOUBLES: strict 1M + 1F per team
+// MIXED DOUBLES: strict 1M + 1F per team, multi-round rotation
+// With 10 players (5M+5F) & 1 court → generates multiple rounds
 // ============================================================
 function generateMixedDoubles(
   players: Player[],
   courts: Court[]
 ): { matches: MatchAssignment[]; resting: Player[]; warnings: string[] } {
   const warnings: string[] = [];
-  const maleQueue = buildRotationQueue(players.filter((p) => p.gender === "MALE"));
-  const femaleQueue = buildRotationQueue(players.filter((p) => p.gender === "FEMALE"));
+  const males = buildRotationQueue(players.filter((p) => p.gender === "MALE"));
+  const females = buildRotationQueue(players.filter((p) => p.gender === "FEMALE"));
 
-  const matches: MatchAssignment[] = [];
-  const usedPlayerIds = new Set<string>();
-
-  const availableCourts = Math.min(
-    courts.length,
-    Math.floor(maleQueue.length / 2),
-    Math.floor(femaleQueue.length / 2)
-  );
-
-  if (availableCourts === 0) {
-    warnings.push(
-      "Not enough male/female players for Mixed Doubles. Need at least 2M + 2F."
-    );
+  if (males.length < 2 || females.length < 2) {
+    warnings.push("Need at least 2 male and 2 female players for Mixed Doubles.");
     return { matches: [], resting: players, warnings };
   }
 
-  if (availableCourts < courts.length) {
-    warnings.push(
-      `Gender imbalance: only ${availableCourts} of ${courts.length} courts can be used for Mixed Doubles.`
-    );
+  const allMatches: MatchAssignment[] = [];
+  const numCourts = courts.length;
+
+  // Max matches schedulable per round
+  const matchesPerRound = Math.min(
+    Math.floor(males.length / 2),
+    Math.floor(females.length / 2),
+    numCourts
+  );
+
+  // Generate enough rounds so all players rotate partners
+  const numRounds = Math.max(males.length, females.length);
+
+  // Polygon method: fix first male & first female, rotate the rest
+  const maleIds = males.map((p) => p.id);
+  const femaleIds = females.map((p) => p.id);
+  const maleFixed = maleIds.splice(0, 1)[0];
+  const femaleFixed = femaleIds.splice(0, 1)[0];
+
+  for (let round = 0; round < numRounds; round++) {
+    const roundMales = [maleFixed, ...maleIds];
+    const roundFemales = [femaleFixed, ...femaleIds];
+    const usedThisRound = new Set<string>();
+
+    for (let c = 0; c < matchesPerRound; c++) {
+      const court = courts[c % numCourts];
+      const m1 = roundMales[c * 2];
+      const m2 = roundMales[c * 2 + 1];
+      const f1 = roundFemales[c * 2];
+      const f2 = roundFemales[c * 2 + 1];
+
+      if (!m1 || !m2 || !f1 || !f2) break;
+      if (usedThisRound.has(m1) || usedThisRound.has(m2) ||
+          usedThisRound.has(f1) || usedThisRound.has(f2)) continue;
+
+      allMatches.push({
+        court_id: court.id,
+        team1_player1_id: m1,
+        team1_player2_id: f1,
+        team2_player1_id: m2,
+        team2_player2_id: f2,
+        round_number: round + 1,
+      });
+      usedThisRound.add(m1); usedThisRound.add(m2);
+      usedThisRound.add(f1); usedThisRound.add(f2);
+    }
+
+    // Rotate for next round
+    if (maleIds.length > 0) { const l = maleIds.pop()!; maleIds.unshift(l); }
+    if (femaleIds.length > 0) { const l = femaleIds.pop()!; femaleIds.unshift(l); }
   }
 
-  const availableMales = maleQueue.filter((p) => !usedPlayerIds.has(p.id));
-  const availableFemales = femaleQueue.filter((p) => !usedPlayerIds.has(p.id));
-
-  for (let i = 0; i < availableCourts; i++) {
-    const court = courts[i];
-    const m1 = availableMales[i * 2];
-    const m2 = availableMales[i * 2 + 1];
-    const f1 = availableFemales[i * 2];
-    const f2 = availableFemales[i * 2 + 1];
-
-    if (!m1 || !m2 || !f1 || !f2) break;
-
-    matches.push({
-      court_id: court.id,
-      team1_player1_id: m1.id,
-      team1_player2_id: f1.id,
-      team2_player1_id: m2.id,
-      team2_player2_id: f2.id,
-      round_number: 1,
-    });
-    [m1, m2, f1, f2].forEach((p) => usedPlayerIds.add(p.id));
+  if (allMatches.length === 0) {
+    warnings.push("Could not generate Mixed Doubles schedule. Check player count.");
   }
 
-  const resting = players.filter((p) => !usedPlayerIds.has(p.id));
-  return { matches, resting, warnings };
+  return { matches: allMatches, resting: [], warnings };
 }
 
 // ============================================================
