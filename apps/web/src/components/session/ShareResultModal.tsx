@@ -75,8 +75,8 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
           </div>
 
           {/* Preview container */}
-          <div className="bg-slate-200 rounded-2xl p-2 sm:p-4 flex justify-center overflow-x-auto scrollbar-hide">
-             <div className="shadow-2xl rounded-2xl overflow-hidden w-full max-w-[400px]">
+          <div className="bg-slate-200 rounded-2xl p-2 sm:p-4 flex justify-center overflow-auto max-h-[50vh] scrollbar-hide">
+             <div className="shadow-2xl rounded-2xl overflow-hidden w-full max-w-[400px] shrink-0">
                <ExportTemplate ref={printRef} session={session} players={players} variant={variant} />
              </div>
           </div>
