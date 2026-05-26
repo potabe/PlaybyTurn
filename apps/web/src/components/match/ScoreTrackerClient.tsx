@@ -114,6 +114,10 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
 
   const finishMatch = useMutation({
     mutationFn: async () => {
+      if (match.status === "COMPLETED") {
+        throw new Error("Match is already completed");
+      }
+
       const winningTeam = winner;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
@@ -334,16 +338,18 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       </div>
 
       {/* ── End match button ── */}
-      <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-white">
-        <Button
-          variant="outline"
-          className="w-full h-11 rounded-xl font-semibold text-sm"
-          onClick={() => setShowConfirm(true)}
-          id="end-match-btn"
-        >
-          End Match
-        </Button>
-      </div>
+      {match.status !== "COMPLETED" && (
+        <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-white">
+          <Button
+            variant="outline"
+            className="w-full h-11 rounded-xl font-semibold text-sm"
+            onClick={() => setShowConfirm(true)}
+            id="end-match-btn"
+          >
+            End Match
+          </Button>
+        </div>
+      )}
 
       {/* ── Confirm end match overlay ── */}
       <AnimatePresence>
