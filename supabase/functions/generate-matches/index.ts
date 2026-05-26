@@ -11,7 +11,6 @@ import type {
   TeamAssignment,
 } from "../_shared/types.ts";
 
-
 // ============================================================
 // Rotation Queue: sorts players by priority rules
 // Priority: fewest matches played → longest rest time
@@ -21,12 +20,8 @@ function buildRotationQueue(players: Player[]): Player[] {
     if (a.matches_played !== b.matches_played) {
       return a.matches_played - b.matches_played;
     }
-    const aLastPlayed = a.last_played_at
-      ? new Date(a.last_played_at).getTime()
-      : 0;
-    const bLastPlayed = b.last_played_at
-      ? new Date(b.last_played_at).getTime()
-      : 0;
+    const aLastPlayed = a.last_played_at ? new Date(a.last_played_at).getTime() : 0;
+    const bLastPlayed = b.last_played_at ? new Date(b.last_played_at).getTime() : 0;
     return aLastPlayed - bLastPlayed;
   });
 }
@@ -45,7 +40,6 @@ function generateSingles(
   for (const court of courts) {
     const available = queue.filter((p) => !usedPlayerIds.has(p.id));
     if (available.length < 2) break;
-
     const [p1, p2] = available;
     matches.push({
       court_id: court.id,
@@ -64,9 +58,23 @@ function generateSingles(
 }
 
 // ============================================================
-// FIXED DOUBLES: pre-assigned teams rotate round-robin
-// If team_assignments provided: full round-robin between all teams
-// Otherwise: fallback to rotation queue (auto-pair sequentially)
+// FIXED DOUBLES: pre-assigned teams, full round-robin
+//
+// Scheduling uses a "max-rest" greedy algorithm:
+//   Each round, score every unscheduled matchup by the total
+//   rest time of all 4 players (sum of rounds since last played).
+//   Pick the highest-scoring matchup for each court slot.
+//   This ensures teams get to rest instead of playing back-to-back.
+//
+// Example — 4 teams + 1 court (6 matches):
+//   Round 1: T1 vs T2   (T3,T4 rest)
+//   Round 2: T3 vs T4   ← both teams fully rested, score = 8
+//   Round 3: T1 vs T3   ← T1 rested R2, T3 rested R1
+//   Round 4: T2 vs T4   ← T2 rested R2-R3, T4 rested R2-R3
+//   Round 5: T1 vs T4
+//   Round 6: T2 vs T3
+//
+// Fallback: if no team_assignments given, auto-pair by rotation queue.
 // ============================================================
 function generateFixedDoubles(
   players: Player[],
@@ -87,13 +95,7 @@ function generateFixedDoubles(
       return { matches: [], resting: players, warnings };
     }
 
-    // Round-robin: every team plays against every other team
-    const allMatches: MatchAssignment[] = [];
-    const numCourts = courts.length;
-    let round = 1;
-    let courtIdx = 0;
-
-    // Generate all unique team vs team pairings
+    // Generate all unique team vs team matchups: C(n, 2)
     const matchups: [TeamAssignment, TeamAssignment][] = [];
     for (let i = 0; i < teams.length; i++) {
       for (let j = i + 1; j < teams.length; j++) {
@@ -101,29 +103,63 @@ function generateFixedDoubles(
       }
     }
 
-    // Schedule matchups into rounds — pack as many courts per round as possible
-    // without a team playing twice in the same round
-    const scheduled = new Array<boolean>(matchups.length).fill(false);
-    let remaining = matchups.length;
+    // ── Max-rest greedy scheduler ──────────────────────────────────────────
+    // Each round: for every unscheduled matchup, compute a "rest score" =
+    // sum of (currentRound - lastPlayedRound) for all 4 players.
+    // Pick the matchup with the highest score (most rested players first).
+    // Multiple courts per round: repeat for each court, excluding already-
+    // used players in that round.
+    const allMatches: MatchAssignment[] = [];
+    const numCourts = courts.length;
 
-    while (remaining > 0) {
-      const usedTeamsThisRound = new Set<string>();
+    // lastPlayedRound[playerId] = round number when they last played (0 = never)
+    const lastPlayedRound: Record<string, number> = {};
+    teams.forEach((t) => {
+      lastPlayedRound[t.player1_id] = 0;
+      lastPlayedRound[t.player2_id] = 0;
+    });
+
+    const scheduled = new Set<number>(); // indices into matchups[]
+    let round = 1;
+
+    while (scheduled.size < matchups.length) {
+      const usedThisRound = new Set<string>();
       let matchesThisRound = 0;
 
-      for (let idx = 0; idx < matchups.length; idx++) {
-        if (scheduled[idx]) continue;
-        const [t1, t2] = matchups[idx];
-        // Check no player conflicts in this round
-        if (
-          usedTeamsThisRound.has(t1.player1_id) ||
-          usedTeamsThisRound.has(t1.player2_id) ||
-          usedTeamsThisRound.has(t2.player1_id) ||
-          usedTeamsThisRound.has(t2.player2_id)
-        ) continue;
+      for (let c = 0; c < numCourts; c++) {
+        let bestIdx = -1;
+        let bestScore = -1;
 
-        const court = courts[courtIdx % numCourts];
+        for (let idx = 0; idx < matchups.length; idx++) {
+          if (scheduled.has(idx)) continue;
+          const [t1, t2] = matchups[idx];
+
+          // Skip if any player is already in a match this round
+          if (
+            usedThisRound.has(t1.player1_id) ||
+            usedThisRound.has(t1.player2_id) ||
+            usedThisRound.has(t2.player1_id) ||
+            usedThisRound.has(t2.player2_id)
+          ) continue;
+
+          // Rest score: higher = both teams have been waiting longer
+          const score =
+            (round - (lastPlayedRound[t1.player1_id] ?? 0)) +
+            (round - (lastPlayedRound[t1.player2_id] ?? 0)) +
+            (round - (lastPlayedRound[t2.player1_id] ?? 0)) +
+            (round - (lastPlayedRound[t2.player2_id] ?? 0));
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestIdx = idx;
+          }
+        }
+
+        if (bestIdx === -1) break; // no valid matchup for this court slot
+
+        const [t1, t2] = matchups[bestIdx];
         allMatches.push({
-          court_id: court.id,
+          court_id: courts[c % numCourts].id,
           team1_player1_id: t1.player1_id,
           team1_player2_id: t1.player2_id,
           team2_player1_id: t2.player1_id,
@@ -131,19 +167,16 @@ function generateFixedDoubles(
           round_number: round,
         });
 
-        usedTeamsThisRound.add(t1.player1_id);
-        usedTeamsThisRound.add(t1.player2_id);
-        usedTeamsThisRound.add(t2.player1_id);
-        usedTeamsThisRound.add(t2.player2_id);
-        scheduled[idx] = true;
-        remaining--;
-        courtIdx++;
+        // Update state
+        usedThisRound.add(t1.player1_id); usedThisRound.add(t1.player2_id);
+        usedThisRound.add(t2.player1_id); usedThisRound.add(t2.player2_id);
+        lastPlayedRound[t1.player1_id] = round; lastPlayedRound[t1.player2_id] = round;
+        lastPlayedRound[t2.player1_id] = round; lastPlayedRound[t2.player2_id] = round;
+        scheduled.add(bestIdx);
         matchesThisRound++;
-
-        if (matchesThisRound >= numCourts) break; // courts full for this round
       }
 
-      if (matchesThisRound === 0) break; // safety
+      if (matchesThisRound === 0) break; // safety: no progress
       round++;
     }
 
@@ -163,7 +196,6 @@ function generateFixedDoubles(
   for (const court of courts) {
     const available = queue.filter((p) => !usedPlayerIds.has(p.id));
     if (available.length < 4) break;
-
     const [p1, p2, p3, p4] = available;
     matches.push({
       court_id: court.id,
@@ -214,7 +246,6 @@ function pickTeam(
     if (usedM.has(m.id)) continue;
     for (const f of females) {
       if (usedF.has(f.id)) continue;
-      // Large penalty for already-covered partnerships so we exhaust new ones first
       const penalty = covered.has(`${m.id}:${f.id}`) ? 100_000 : 0;
       const score = penalty + (playCount[m.id] ?? 0) + (playCount[f.id] ?? 0);
       if (score < bestScore) {
@@ -240,20 +271,13 @@ function generateMixedDoubles(
   }
 
   const allMatches: MatchAssignment[] = [];
-
-  // Target: cover every unique (M, F) partnership at least once
   const totalPartnerships = males.length * females.length;
-  const covered = new Set<string>(); // "mId:fId"
-
-  // Track how many matches each individual player has played this session
+  const covered = new Set<string>();
   const playCount: Record<string, number> = {};
   [...males, ...females].forEach((p) => { playCount[p.id] = 0; });
 
   const numCourts = courts.length;
   let round = 1;
-
-  // Safety ceiling: need at most ceil(totalPartnerships / (numCourts * 2)) rounds
-  // to cover all pairs (each round covers 2 new pairs per court). Add buffer.
   const maxRounds = Math.ceil(totalPartnerships / (numCourts * 2)) * 2 + 10;
 
   while (covered.size < totalPartnerships && round <= maxRounds) {
@@ -262,16 +286,11 @@ function generateMixedDoubles(
     let scheduledThisRound = 0;
 
     for (let c = 0; c < numCourts; c++) {
-      // Pick team1
       const team1 = pickTeam(males, females, covered, playCount, usedM, usedF);
       if (!team1) break;
 
-      // Pick team2: must use a DIFFERENT male and DIFFERENT female
       const team2 = pickTeam(
-        males,
-        females,
-        covered,
-        playCount,
+        males, females, covered, playCount,
         new Set([...usedM, team1.m.id]),
         new Set([...usedF, team1.f.id])
       );
@@ -286,11 +305,8 @@ function generateMixedDoubles(
         round_number: round,
       });
 
-      // Mark players as used in this round
       usedM.add(team1.m.id); usedM.add(team2.m.id);
       usedF.add(team1.f.id); usedF.add(team2.f.id);
-
-      // Update global play counts and covered partnerships
       [team1.m.id, team1.f.id, team2.m.id, team2.f.id].forEach(
         (id) => { playCount[id] = (playCount[id] ?? 0) + 1; }
       );
@@ -299,23 +315,19 @@ function generateMixedDoubles(
       scheduledThisRound++;
     }
 
-    if (scheduledThisRound === 0) break; // No progress possible
+    if (scheduledThisRound === 0) break;
     round++;
   }
 
   if (allMatches.length === 0) {
-    warnings.push(
-      "Could not generate Mixed Doubles schedule. Check player count and gender balance."
-    );
+    warnings.push("Could not generate Mixed Doubles schedule. Check player count and gender balance.");
   }
 
   return { matches: allMatches, resting: [], warnings };
 }
 
 // ============================================================
-// AMERICANO: round-robin rotation
-// Uses the "polygon method" for even N, handles odd N with bye
-// Returns ALL rounds upfront (deterministic full schedule)
+// AMERICANO: round-robin rotation (polygon method)
 // ============================================================
 function generateAmericano(
   players: Player[],
@@ -331,7 +343,6 @@ function generateAmericano(
 
   const allMatches: MatchAssignment[] = [];
   const ids = players.map((p) => p.id);
-
   const numCourts = courts.length;
 
   let list = [...ids];
@@ -410,7 +421,6 @@ serve(async (req: Request) => {
       case "FIXED_DOUBLES":
         result = generateFixedDoubles(players, courts, body.team_assignments);
         break;
-
       case "MIXED_DOUBLES":
         result = generateMixedDoubles(players, courts);
         break;
@@ -438,18 +448,10 @@ serve(async (req: Request) => {
         score_history: [],
       }));
 
-      const { error: insertError } = await supabase
-        .from("matches")
-        .insert(matchRows);
+      const { error: insertError } = await supabase.from("matches").insert(matchRows);
+      if (insertError) throw new Error(`Failed to insert matches: ${insertError.message}`);
 
-      if (insertError) {
-        throw new Error(`Failed to insert matches: ${insertError.message}`);
-      }
-
-      await supabase
-        .from("sessions")
-        .update({ status: "ACTIVE" })
-        .eq("id", session_id);
+      await supabase.from("sessions").update({ status: "ACTIVE" }).eq("id", session_id);
     }
 
     const response: GenerateMatchesResponse = {
