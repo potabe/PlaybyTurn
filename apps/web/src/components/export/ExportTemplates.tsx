@@ -77,7 +77,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                       <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{second.name}</div>
                       <div className="text-slate-300 text-[10px] sm:text-xs font-semibold">{second.points_won} pts</div>
                     </div>
-                    <div className="w-full bg-slate-200/90 rounded-t-xl h-[100px] relative overflow-hidden shrink-0">
+                    <div className="w-full bg-slate-200/90 rounded-t-xl h-[100px] min-h-[100px] relative overflow-hidden shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent" />
                       <div className="absolute bottom-4 w-full text-center text-slate-500 font-black text-2xl sm:text-3xl">2</div>
                     </div>
@@ -99,7 +99,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                       <div className="font-black text-white text-sm sm:text-base truncate w-full px-1">{first.name}</div>
                       <div className="text-yellow-400 text-xs sm:text-sm font-bold">{first.points_won} pts</div>
                     </div>
-                    <div className="w-full bg-yellow-400 rounded-t-xl h-[140px] relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.3)] shrink-0">
+                    <div className="w-full bg-yellow-400 rounded-t-xl h-[140px] min-h-[140px] relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.3)] shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent" />
                       <div className="absolute bottom-5 w-full text-center text-yellow-600 font-black text-4xl sm:text-5xl">1</div>
                     </div>
@@ -118,7 +118,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                       <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{third.name}</div>
                       <div className="text-amber-300 text-[10px] sm:text-xs font-semibold">{third.points_won} pts</div>
                     </div>
-                    <div className="w-full bg-amber-700/90 rounded-t-xl h-[70px] relative overflow-hidden shrink-0">
+                    <div className="w-full bg-amber-700/90 rounded-t-xl h-[70px] min-h-[70px] relative overflow-hidden shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                       <div className="absolute bottom-3 w-full text-center text-amber-900/60 font-black text-2xl sm:text-3xl">3</div>
                     </div>
