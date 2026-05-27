@@ -708,7 +708,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
           open={showShareModal}
           onOpenChange={setShowShareModal}
           session={session}
-          players={players}
+          players={displayStandings}
         />
       )}
     </div>
