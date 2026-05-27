@@ -84,8 +84,8 @@ function MatchCard({
   const t2p1 = match.team2_player1_id ? playerMap[match.team2_player1_id] : null;
   const t2p2 = match.team2_player2_id ? playerMap[match.team2_player2_id] : null;
 
-  const team1 = [t1p1?.name, t1p2?.name].filter(Boolean).join(" & ");
-  const team2 = [t2p1?.name, t2p2?.name].filter(Boolean).join(" & ");
+  const team1 = [t1p1?.name, t1p2?.name].filter(Boolean).join(" & ") || "TBD";
+  const team2 = [t2p1?.name, t2p2?.name].filter(Boolean).join(" & ") || "TBD";
 
   const statusColors = {
     PENDING: "bg-muted text-muted-foreground",
@@ -534,8 +534,19 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   // Can only edit seeding if no matches have started
   const canEditSeeding = session?.is_knockout && isActive && (matches ?? []).every(m => m.status === "PENDING");
 
-  const liveMatches = allLiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
+  // Filter out completely empty ghost matches (where both teams are TBD)
+  const visibleLiveMatches = allLiveMatches.filter((m) => {
+    const isCompletelyEmpty = !m.team1_player1_id && !m.team2_player1_id;
+    return !isCompletelyEmpty;
+  });
+
+  const liveMatches = visibleLiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
   const doneMatches = allDoneMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
+
+  // Stats
+  const totalMatches = (matches ?? []).filter(m => !(!m.team1_player1_id && !m.team2_player1_id)).length;
+  const completedMatches = allDoneMatches.length;
+  const progress = totalMatches === 0 ? 0 : (completedMatches / totalMatches) * 100;
 
   let displayStandings = [...(players ?? [])].sort((a, b) => {
     if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
