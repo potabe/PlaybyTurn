@@ -64,16 +64,16 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
           {/* Content */}
           {variant === "podium" ? (
             <div className="py-6">
-              <div className="flex items-end justify-center gap-2 sm:gap-4 h-[280px] sm:h-[300px]">
+              <div className="flex items-end justify-center gap-2 sm:gap-4 h-[250px] sm:h-[280px]">
                 {/* 2nd Place */}
                 {second && (
-                  <div className="flex flex-col items-center flex-1 shrink-0">
+                  <div className="flex flex-col items-center flex-1 min-w-0">
                     <div className="relative mb-2 shrink-0">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-300 border-4 border-slate-400/50 flex items-center justify-center text-slate-600 text-xl shadow-lg shadow-slate-400/20 shrink-0">
                         🥈
                       </div>
                     </div>
-                    <div className="text-center mb-3 w-full shrink-0">
+                    <div className="text-center mb-3 w-full min-w-0 shrink-0">
                       <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{second.name}</div>
                       <div className="text-slate-300 text-[10px] sm:text-xs font-semibold">{second.points_won} pts</div>
                     </div>
@@ -86,7 +86,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
 
                 {/* 1st Place */}
                 {first && (
-                  <div className="flex flex-col items-center flex-[1.2] z-10 shrink-0">
+                  <div className="flex flex-col items-center flex-[1.2] z-10 min-w-0">
                     <div className="relative mb-2 shrink-0">
                       <div className="absolute -top-5 left-1/2 -translate-x-1/2">
                         <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
@@ -95,7 +95,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                         🥇
                       </div>
                     </div>
-                    <div className="text-center mb-3 w-full shrink-0">
+                    <div className="text-center mb-3 w-full min-w-0 shrink-0">
                       <div className="font-black text-white text-sm sm:text-base truncate w-full px-1">{first.name}</div>
                       <div className="text-yellow-400 text-xs sm:text-sm font-bold">{first.points_won} pts</div>
                     </div>
@@ -108,13 +108,13 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
 
                 {/* 3rd Place */}
                 {third && (
-                  <div className="flex flex-col items-center flex-1 shrink-0">
+                  <div className="flex flex-col items-center flex-1 min-w-0">
                     <div className="relative mb-2 shrink-0">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-600 border-4 border-amber-500/50 flex items-center justify-center text-amber-200 text-xl shadow-lg shadow-amber-600/20 shrink-0">
                         🥉
                       </div>
                     </div>
-                    <div className="text-center mb-3 w-full shrink-0">
+                    <div className="text-center mb-3 w-full min-w-0 shrink-0">
                       <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{third.name}</div>
                       <div className="text-amber-300 text-[10px] sm:text-xs font-semibold">{third.points_won} pts</div>
                     </div>
