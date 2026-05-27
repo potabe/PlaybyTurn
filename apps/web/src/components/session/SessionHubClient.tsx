@@ -16,7 +16,7 @@ import {
 import { ShareResultModal } from "./ShareResultModal";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
-import { TournamentBracket } from "@/components/bracket/TournamentBracket";
+import { TournamentBracket, type TeamSlot } from "@/components/bracket/TournamentBracket";
 
 // ─── Leaderboard row ───────────────────────────────────────
 function LeaderboardRow({ player, rank }: { player: Player; rank: number }) {
@@ -402,6 +402,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const [endMode, setEndMode] = useState<EndMode | null>(null);
   const [selectedCourtId, setSelectedCourtId] = useState<string | "all">("all");
   const [showShareModal, setShowShareModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ["session", initialSession.id],
@@ -481,11 +482,57 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
     },
   });
 
+  // ── Swap seeding mutation ──
+  const swapSeeding = useMutation({
+    mutationFn: async ({ slot1, slot2 }: { slot1: TeamSlot; slot2: TeamSlot }) => {
+      if (!matches) throw new Error("Matches not loaded");
+      
+      const m1 = matches.find(m => m.id === slot1.matchId);
+      const m2 = matches.find(m => m.id === slot2.matchId);
+      
+      if (!m1 || !m2) throw new Error("Matches not found");
+
+      // Extract teams
+      const team1_p1 = slot1.teamIndex === 1 ? m1.team1_player1_id : m1.team2_player1_id;
+      const team1_p2 = slot1.teamIndex === 1 ? m1.team1_player2_id : m1.team2_player2_id;
+      
+      const team2_p1 = slot2.teamIndex === 1 ? m2.team1_player1_id : m2.team2_player1_id;
+      const team2_p2 = slot2.teamIndex === 1 ? m2.team1_player2_id : m2.team2_player2_id;
+
+      // Update match 1
+      const update1 = slot1.teamIndex === 1 
+        ? { team1_player1_id: team2_p1, team1_player2_id: team2_p2 }
+        : { team2_player1_id: team2_p1, team2_player2_id: team2_p2 };
+
+      // Update match 2
+      const update2 = slot2.teamIndex === 1
+        ? { team1_player1_id: team1_p1, team1_player2_id: team1_p2 }
+        : { team2_player1_id: team1_p1, team2_player2_id: team1_p2 };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: err1 } = await (supabase as any).from("matches").update(update1).eq("id", m1.id);
+      if (err1) throw err1;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: err2 } = await (supabase as any).from("matches").update(update2).eq("id", m2.id);
+      if (err2) throw err2;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matches", initialSession.id] });
+    },
+    onError: (err) => {
+      console.error("Failed to swap:", err.message);
+    }
+  });
+
   const courtMap = Object.fromEntries((courts ?? []).map((c) => [c.id, c]));
   const allLiveMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
   const allDoneMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
   const allDone = allLiveMatches.length === 0 && (matches ?? []).length > 0;
   const isActive = session?.status === "ACTIVE";
+  
+  // Can only edit seeding if no matches have started
+  const canEditSeeding = session?.is_knockout && isActive && (matches ?? []).every(m => m.status === "PENDING");
 
   const liveMatches = allLiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
   const doneMatches = allDoneMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
@@ -618,8 +665,35 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
 
         {/* Bracket tab */}
         {session?.is_knockout && (
-          <TabsContent value="bracket" className="mt-4 bg-slate-50/50 rounded-2xl border border-border min-h-[300px]">
-            <TournamentBracket matches={matches ?? []} players={players ?? []} isAdmin={true} />
+          <TabsContent value="bracket" className="mt-4">
+            <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px] relative">
+              {canEditSeeding && (
+                <div className="absolute top-4 right-4 z-10 flex gap-2">
+                  <Button
+                    variant={isEditMode ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 text-xs font-bold shadow-sm"
+                    onClick={() => setIsEditMode(!isEditMode)}
+                  >
+                    {isEditMode ? "Done Editing" : "⚙️ Edit Seeding"}
+                  </Button>
+                </div>
+              )}
+              {isEditMode && (
+                <div className="absolute top-4 left-4 z-10 bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-bold border border-primary/20">
+                  Select 2 teams to swap their positions
+                </div>
+              )}
+              <TournamentBracket 
+                matches={matches ?? []} 
+                players={players ?? []} 
+                isAdmin={true} 
+                isEditMode={isEditMode}
+                onSwap={(slot1, slot2) => {
+                  swapSeeding.mutate({ slot1, slot2 });
+                }}
+              />
+            </div>
           </TabsContent>
         )}
 

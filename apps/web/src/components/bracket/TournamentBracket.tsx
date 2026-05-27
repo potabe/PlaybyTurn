@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Match, Player } from "@/types/session";
+
+export interface TeamSlot {
+  matchId: string;
+  teamIndex: 1 | 2;
+}
 
 interface TournamentBracketProps {
   matches: Match[];
   players: Player[];
   isAdmin?: boolean;
+  isEditMode?: boolean;
+  onSwap?: (slot1: TeamSlot, slot2: TeamSlot) => void;
 }
 
 // Helper to resolve player names
@@ -19,8 +26,9 @@ function getTeamName(p1Id: string | null, p2Id: string | null, playersMap: Recor
   return p1;
 }
 
-export function TournamentBracket({ matches, players, isAdmin }: TournamentBracketProps) {
+export function TournamentBracket({ matches, players, isAdmin, isEditMode, onSwap }: TournamentBracketProps) {
   const playersMap = Object.fromEntries(players.map((p) => [p.id, p]));
+  const [selectedSlot, setSelectedSlot] = useState<TeamSlot | null>(null);
 
   // Group matches by round
   const maxRound = Math.max(...matches.map(m => m.round_number), 1);
@@ -52,12 +60,38 @@ export function TournamentBracket({ matches, players, isAdmin }: TournamentBrack
                 const isT1Winner = match.winning_team === "TEAM1";
                 const isT2Winner = match.winning_team === "TEAM2";
 
+                const handleSlotClick = (teamIndex: 1 | 2, teamName: string) => {
+                  if (!isEditMode || teamName === "TBD") return;
+                  const slot: TeamSlot = { matchId: match.id, teamIndex };
+                  
+                  if (!selectedSlot) {
+                    setSelectedSlot(slot);
+                  } else {
+                    if (selectedSlot.matchId === slot.matchId && selectedSlot.teamIndex === slot.teamIndex) {
+                      setSelectedSlot(null); // Deselect
+                    } else {
+                      onSwap?.(selectedSlot, slot);
+                      setSelectedSlot(null); // Reset after swap
+                    }
+                  }
+                };
+
+                const isSlotSelected = (teamIndex: 1 | 2) => 
+                  selectedSlot?.matchId === match.id && selectedSlot?.teamIndex === teamIndex;
+
                 return (
                   <div key={match.id} className="relative flex flex-col">
-                    <div className="bg-white border-2 border-border rounded-xl overflow-hidden shadow-sm hover:border-primary/50 transition-colors">
+                    <div className={`bg-white border-2 rounded-xl overflow-hidden shadow-sm transition-colors ${
+                      isEditMode ? "border-primary/40 shadow-primary/10" : "border-border hover:border-primary/50"
+                    }`}>
                       {/* Team 1 */}
-                      <div className={`flex justify-between items-center px-3 py-2 border-b border-border ${isT1Winner ? 'bg-primary/10' : ''}`}>
-                        <span className={`text-sm truncate mr-2 ${isT1Winner ? 'font-bold text-primary' : 'font-medium text-slate-700'}`}>
+                      <div 
+                        onClick={() => handleSlotClick(1, team1Name)}
+                        className={`flex justify-between items-center px-3 py-2 border-b border-border transition-colors ${
+                          isEditMode && team1Name !== "TBD" ? "cursor-pointer hover:bg-primary/10" : ""
+                        } ${isSlotSelected(1) ? "bg-primary/20" : isT1Winner ? 'bg-primary/10' : ''}`}
+                      >
+                        <span className={`text-sm truncate mr-2 ${isT1Winner || isSlotSelected(1) ? 'font-bold text-primary' : 'font-medium text-slate-700'}`}>
                           {team1Name}
                         </span>
                         {match.status === "COMPLETED" && (
@@ -67,8 +101,13 @@ export function TournamentBracket({ matches, players, isAdmin }: TournamentBrack
                         )}
                       </div>
                       {/* Team 2 */}
-                      <div className={`flex justify-between items-center px-3 py-2 ${isT2Winner ? 'bg-primary/10' : ''}`}>
-                        <span className={`text-sm truncate mr-2 ${isT2Winner ? 'font-bold text-primary' : 'font-medium text-slate-700'}`}>
+                      <div 
+                        onClick={() => handleSlotClick(2, team2Name)}
+                        className={`flex justify-between items-center px-3 py-2 transition-colors ${
+                          isEditMode && team2Name !== "TBD" ? "cursor-pointer hover:bg-primary/10" : ""
+                        } ${isSlotSelected(2) ? "bg-primary/20" : isT2Winner ? 'bg-primary/10' : ''}`}
+                      >
+                        <span className={`text-sm truncate mr-2 ${isT2Winner || isSlotSelected(2) ? 'font-bold text-primary' : 'font-medium text-slate-700'}`}>
                           {team2Name}
                         </span>
                         {match.status === "COMPLETED" && (
