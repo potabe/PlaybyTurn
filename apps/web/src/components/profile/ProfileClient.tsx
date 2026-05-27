@@ -9,9 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Camera, Check, Loader2, LogOut,
-  User, Mail, Shield, Trash2, ChevronRight, Download, Share
+  User, Mail, Shield, Trash2, ChevronRight, Download, Share, Plus, X as XIcon, Trophy
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { SPORT_EMOJIS, SPORT_LABELS } from "@/lib/utils/format";
+import type { SportType, SkillLevel } from "@/types/session";
 
 // ─── Animated section wrapper ─────────────────────────────────
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -99,6 +101,118 @@ function Row({
         <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       )}
     </button>
+  );
+}
+
+// ─── Skill Badges config ──────────────────────────────────────
+const SKILL_LEVELS: SkillLevel[] = ["NEWBIE", "BEGINNER", "INTERMEDIATE", "ADVANCED", "PRO"];
+
+const SKILL_COLORS: Record<SkillLevel, string> = {
+  NEWBIE: "bg-slate-100 text-slate-700 border-slate-200",
+  BEGINNER: "bg-blue-100 text-blue-800 border-blue-200",
+  INTERMEDIATE: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  ADVANCED: "bg-purple-100 text-purple-800 border-purple-200",
+  PRO: "bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 border-yellow-400 shadow-sm",
+};
+
+const SKILL_LABELS: Record<SkillLevel, string> = {
+  NEWBIE: "Newbie",
+  BEGINNER: "Beginner",
+  INTERMEDIATE: "Intermediate",
+  ADVANCED: "Advanced",
+  PRO: "Pro",
+};
+
+// ─── Edit Skills Modal ────────────────────────────────────────
+function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
+  currentSkills: Record<SportType, SkillLevel>;
+  onSave: (skills: Record<SportType, SkillLevel>) => void;
+  onCancel: () => void;
+  isSaving: boolean;
+}) {
+  const [skills, setSkills] = useState<Record<string, SkillLevel>>(currentSkills || {});
+
+  const toggleSportSkill = (sport: SportType, level: SkillLevel) => {
+    setSkills(prev => {
+      // If clicking the same level, remove the sport entirely
+      if (prev[sport] === level) {
+        const next = { ...prev };
+        delete next[sport];
+        return next;
+      }
+      return { ...prev, [sport]: level };
+    });
+  };
+
+  const sportsList: SportType[] = ["PADEL", "TENNIS", "BADMINTON", "TABLE_TENNIS"];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", damping: 28, stiffness: 420 }}
+        className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+      >
+        <div className="p-5 border-b border-border bg-muted/10 flex items-center justify-between flex-shrink-0">
+          <div>
+            <h3 className="font-black text-lg">Sport Skills</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Select your skill level for each sport</p>
+          </div>
+          <button onClick={onCancel} className="p-2 bg-white rounded-full text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors shadow-sm border border-border">
+            <XIcon className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="p-5 overflow-y-auto space-y-6 flex-1">
+          {sportsList.map(sport => {
+            const currentLevel = skills[sport];
+            return (
+              <div key={sport} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{SPORT_EMOJIS[sport]}</span>
+                  <span className="font-bold text-sm">{SPORT_LABELS[sport]}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {SKILL_LEVELS.map(level => {
+                    const isSelected = currentLevel === level;
+                    return (
+                      <button
+                        key={level}
+                        onClick={() => toggleSportSkill(sport, level)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                          isSelected 
+                            ? SKILL_COLORS[level] + " ring-2 ring-primary/20 scale-105" 
+                            : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        {SKILL_LABELS[level]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="p-5 border-t border-border bg-white flex-shrink-0">
+          <Button
+            className="w-full h-12 rounded-xl font-black"
+            onClick={() => onSave(skills as Record<SportType, SkillLevel>)}
+            disabled={isSaving}
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4 mr-1.5" />Save Skills</>}
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -211,7 +325,7 @@ export function ProfileClient() {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [modal, setModal] = useState<"name" | "signout" | "ios-install" | null>(null);
+  const [modal, setModal] = useState<"name" | "skills" | "signout" | "ios-install" | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
@@ -253,6 +367,27 @@ export function ProfileClient() {
       showToast("Name updated successfully!");
     } catch {
       showToast("Failed to update name", false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ── Save skills ──────────────────────────────────────────
+  const handleSaveSkills = async (newSkills: Record<SportType, SkillLevel>) => {
+    if (!user) return;
+    setIsSaving(true);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("profiles")
+        .update({ skill_levels: newSkills, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (error) throw error;
+      setLocalProfile((p) => p ? { ...p, skill_levels: newSkills } : p);
+      setModal(null);
+      showToast("Skills updated successfully!");
+    } catch {
+      showToast("Failed to update skills", false);
     } finally {
       setIsSaving(false);
     }
@@ -380,6 +515,44 @@ export function ProfileClient() {
 
       {/* Settings sections */}
       <div className="max-w-lg mx-auto px-4 space-y-5">
+        
+        {/* Skills */}
+        <Section title="Sports & Skills">
+          <div className="p-4 bg-white border-b border-border">
+            {(!localProfile?.skill_levels || Object.keys(localProfile.skill_levels).length === 0) ? (
+              <div className="text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                  <Trophy className="h-5 w-5 text-slate-300" />
+                </div>
+                <p className="text-sm font-semibold text-slate-500">No sports added yet</p>
+                <p className="text-xs text-slate-400 mt-1">Showcase your skills on your profile</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(localProfile.skill_levels).map(([sport, level]) => (
+                  <div key={sport} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">{SPORT_EMOJIS[sport as SportType]}</span>
+                      <span className="text-xs font-bold text-slate-700">{SPORT_LABELS[sport as SportType]}</span>
+                    </div>
+                    <div className={`self-start px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider border ${SKILL_COLORS[level as SkillLevel]}`}>
+                      {SKILL_LABELS[level as SkillLevel]}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <Button
+              variant="outline"
+              className="w-full mt-4 h-10 rounded-xl font-bold border-dashed border-2 hover:border-primary/50 hover:bg-primary/5 text-primary"
+              onClick={() => setModal("skills")}
+            >
+              <Plus className="h-4 w-4 mr-1.5" /> Edit Skills
+            </Button>
+          </div>
+        </Section>
+
         {/* Account */}
         <Section title="Account">
           <Row icon={User} label="Display Name" value={localProfile?.name ?? "Not set"} onClick={() => setModal("name")} />
@@ -433,6 +606,14 @@ export function ProfileClient() {
         <EditNameModal
           currentName={localProfile?.name ?? ""}
           onSave={handleSaveName}
+          onCancel={() => setModal(null)}
+          isSaving={isSaving}
+        />
+      )}
+      {modal === "skills" && (
+        <EditSkillsModal
+          currentSkills={localProfile?.skill_levels as Record<SportType, SkillLevel> || {}}
+          onSave={handleSaveSkills}
           onCancel={() => setModal(null)}
           isSaving={isSaving}
         />

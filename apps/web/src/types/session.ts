@@ -12,6 +12,8 @@ import type {
 } from "./database";
 import type { ScoreData } from "./scoring";
 
+export type SkillLevel = "NEWBIE" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "PRO";
+
 export type { SportType, FormatType, GenderType, SessionStatus, MatchStatus, WinningTeam, ScoreData };
 
 // ============================================================
@@ -22,6 +24,7 @@ export interface Profile {
   id: string;
   name: string;
   avatar_url: string | null;
+  skill_levels?: Record<SportType, SkillLevel> | null;
   created_at: string;
   updated_at: string;
 }

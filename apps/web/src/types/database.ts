@@ -30,6 +30,7 @@ export interface Database {
           id: string;
           name: string;
           avatar_url: string | null;
+          skill_levels: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -37,12 +38,14 @@ export interface Database {
           id: string;
           name: string;
           avatar_url?: string | null;
+          skill_levels?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           name?: string;
           avatar_url?: string | null;
+          skill_levels?: Json | null;
           updated_at?: string;
         };
       };
