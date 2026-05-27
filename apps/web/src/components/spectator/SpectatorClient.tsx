@@ -31,12 +31,12 @@ function LiveMatchCard({
     .filter(Boolean)
     .map((id) => playerMap[id!]?.name)
     .filter(Boolean)
-    .join(" & ");
+    .join(" & ") || "TBD";
   const team2 = [match.team2_player1_id, match.team2_player2_id]
     .filter(Boolean)
     .map((id) => playerMap[id!]?.name)
     .filter(Boolean)
-    .join(" & ");
+    .join(" & ") || "TBD";
 
   const scoreData = match.score_data as Record<string, unknown>;
   const hasScore = Object.keys(scoreData).length > 0;
@@ -210,7 +210,11 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   }, [session.id, supabase, queryClient]);
 
   const courtMap = Object.fromEntries((courts ?? []).map((c) => [c.id, c]));
-  const allActiveMatches = (matches ?? []).filter((m) => m.status === "IN_PROGRESS" || m.status === "PENDING");
+  const allActiveMatches = (matches ?? []).filter((m) => {
+    const isActive = m.status === "IN_PROGRESS" || m.status === "PENDING";
+    const isCompletelyEmpty = !m.team1_player1_id && !m.team2_player1_id;
+    return isActive && !isCompletelyEmpty;
+  });
   const activeMatches = allActiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
   const completedMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
 
