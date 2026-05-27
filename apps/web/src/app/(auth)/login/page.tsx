@@ -48,6 +48,29 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  async function handleResetPassword() {
+    if (!email) {
+      setError("Please enter your email to reset your password.");
+      setSuccessMsg(null);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?redirect=/profile`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccessMsg("Password reset link sent! Please check your email.");
+    }
+    setIsLoading(false);
+  }
 
   async function handleGitHubLogin() {
     setIsGitHubLoading(true);
@@ -68,6 +91,7 @@ function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccessMsg(null);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -99,6 +123,13 @@ function LoginForm() {
       {error && (
         <div className="mb-5 rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
           {error}
+        </div>
+      )}
+
+      {/* Success */}
+      {successMsg && (
+        <div className="mb-5 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-700">
+          {successMsg}
         </div>
       )}
 
@@ -154,7 +185,9 @@ function LoginForm() {
             </label>
             <button
               type="button"
-              className="text-xs text-primary hover:underline"
+              onClick={handleResetPassword}
+              disabled={isLoading}
+              className="text-xs text-primary hover:underline disabled:opacity-50"
             >
               Forgot password?
             </button>
