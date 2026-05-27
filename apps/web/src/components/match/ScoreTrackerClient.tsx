@@ -35,6 +35,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
   );
   const [history, setHistory] = useState<ScoreData[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showReopenConfirm, setShowReopenConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [tapFeedback, setTapFeedback] = useState<Team | null>(null);
 
@@ -204,6 +205,100 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       queryClient.invalidateQueries({ queryKey: ["players", match.session_id] });
       router.push(`/sessions/${match.session_id}`);
     },
+  });
+
+  const reopenMatch = useMutation({
+    mutationFn: async () => {
+      if (match.status !== "COMPLETED") throw new Error("Match is not completed");
+
+      const winningTeam = match.winning_team === "TEAM1" ? "team1" : "team2";
+      const winnerIds = winningTeam === "team1"
+        ? [match.team1_player1_id, match.team1_player2_id]
+        : [match.team2_player1_id, match.team2_player2_id];
+
+      // ── KNOCKOUT ROLLBACK LOGIC ──
+      if (match.next_match_id) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: nextMatch } = await (supabase as any)
+          .from("matches")
+          .select("*")
+          .eq("id", match.next_match_id)
+          .single();
+        
+        if (nextMatch) {
+          if (nextMatch.status !== "PENDING") {
+            throw new Error("Cannot reopen: The next match has already started or completed.");
+          }
+
+          const updatePayload: Record<string, string | null> = {};
+          if (nextMatch.team1_player1_id === winnerIds[0]) {
+            updatePayload.team1_player1_id = null;
+            updatePayload.team1_player2_id = null;
+          } else if (nextMatch.team2_player1_id === winnerIds[0]) {
+            updatePayload.team2_player1_id = null;
+            updatePayload.team2_player2_id = null;
+          }
+
+          if (Object.keys(updatePayload).length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { error: nextError } = await (supabase as any)
+              .from("matches")
+              .update(updatePayload)
+              .eq("id", match.next_match_id);
+            if (nextError) throw new Error("Failed to rollback next match slots");
+          }
+        }
+      }
+
+      // Rollback players stats
+      const allIds = [
+        match.team1_player1_id, match.team1_player2_id,
+        match.team2_player1_id, match.team2_player2_id,
+      ].filter(Boolean) as string[];
+
+      for (const playerId of allIds) {
+        const isWinner = winnerIds.includes(playerId);
+        const player = playerMap[playerId];
+        if (!player) continue;
+
+        const team = (playerId === match.team1_player1_id || playerId === match.team1_player2_id) ? "team1" : "team2";
+        const stats = getMatchStats(scoreState, team); // Using the final score that was saved
+        const diff = stats.won - stats.lost;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from("players")
+          .update({
+            matches_played: Math.max(0, player.matches_played - 1),
+            matches_won: Math.max(0, player.matches_won - (isWinner ? 1 : 0)),
+            points_won: Math.max(0, (player.points_won || 0) - stats.won),
+            point_differential: (player.point_differential || 0) - diff,
+          })
+          .eq("id", playerId);
+      }
+
+      // Update match status to IN_PROGRESS
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("matches")
+        .update({
+          status: "IN_PROGRESS",
+          winning_team: null,
+          completed_at: null,
+        })
+        .eq("id", match.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matches", match.session_id] });
+      queryClient.invalidateQueries({ queryKey: ["players", match.session_id] });
+      setShowReopenConfirm(false);
+      setMatch(prev => ({...prev, status: "IN_PROGRESS", winning_team: null, completed_at: null}));
+    },
+    onError: (err) => {
+      alert(err.message);
+    }
   });
 
   // ── Point handlers ─────────────────────────────────────
@@ -391,15 +486,25 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       {/* ── Bottom Action Button ── */}
       <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-white">
         {match.status === "COMPLETED" ? (
-          <Button
-            variant="outline"
-            className="w-full h-11 rounded-xl font-bold text-sm bg-muted/30 hover:bg-muted border-dashed"
-            onClick={() => router.push(`/sessions/${match.session_id}`)}
-            id="back-to-session-btn"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Matches
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-[2] h-11 rounded-xl font-bold text-sm bg-muted/30 hover:bg-muted border-dashed"
+              onClick={() => router.push(`/sessions/${match.session_id}`)}
+              id="back-to-session-btn"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Matches
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-[1] h-11 rounded-xl font-bold text-sm border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+              onClick={() => setShowReopenConfirm(true)}
+              id="reopen-match-btn"
+            >
+              Re-open
+            </Button>
+          </div>
         ) : (
           <Button
             variant="outline"
@@ -478,6 +583,53 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   </div>
                 </>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Confirm reopen match overlay ── */}
+      <AnimatePresence>
+        {showReopenConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 flex items-end z-50 pb-safe"
+            onClick={(e) => e.target === e.currentTarget && setShowReopenConfirm(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="w-full bg-white rounded-t-3xl px-6 pt-6 pb-8"
+            >
+              <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-3">⚠️</div>
+                <h3 className="text-xl font-black">Re-open Match?</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This will undo the final result and deduct any points/wins that were awarded to the players.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-12 rounded-xl font-semibold"
+                  onClick={() => setShowReopenConfirm(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 h-12 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white"
+                  onClick={() => reopenMatch.mutate()}
+                  disabled={reopenMatch.isPending}
+                  id="confirm-reopen-btn"
+                >
+                  {reopenMatch.isPending ? "Reopening…" : "Yes, Re-open"}
+                </Button>
+              </div>
             </motion.div>
           </motion.div>
         )}
