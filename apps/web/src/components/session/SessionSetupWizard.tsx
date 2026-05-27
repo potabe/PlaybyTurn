@@ -172,6 +172,7 @@ export function SessionSetupWizard() {
             courts,
             sport: form.sport,
             format: form.format,
+            is_knockout: form.is_knockout,
             ...(resolvedTeams ? { team_assignments: resolvedTeams } : {}),
           },
         }
