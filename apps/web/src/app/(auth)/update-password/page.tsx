@@ -29,8 +29,11 @@ export default function UpdatePasswordPage() {
       setError(error.message);
       setIsLoading(false);
     } else {
+      // Show success briefly
+      setError(null);
+      setIsLoading(false);
+      alert("Password updated successfully!");
       router.push("/dashboard");
-      router.refresh();
     }
   }
 
