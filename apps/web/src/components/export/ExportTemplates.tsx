@@ -64,7 +64,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
           {/* Content */}
           {variant === "podium" ? (
             <div className="py-6">
-              <div className="flex items-end justify-center gap-2 sm:gap-4 h-[250px] sm:h-[280px]">
+              <div className="flex items-end justify-center gap-2 sm:gap-4 h-[270px] sm:h-[300px]">
                 {/* 2nd Place */}
                 {second && (
                   <div className="flex flex-col items-center flex-1 min-w-0">
@@ -74,8 +74,8 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                       </div>
                     </div>
                     <div className="text-center mb-3 w-full min-w-0 shrink-0">
-                      <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{second.name}</div>
-                      <div className="text-slate-300 text-[10px] sm:text-xs font-semibold">{second.points_won} pts</div>
+                      <div className="font-bold text-white text-xs sm:text-sm leading-tight break-words w-full px-1">{second.name}</div>
+                      <div className="text-slate-300 text-[10px] sm:text-xs font-semibold mt-0.5">{second.points_won} pts</div>
                     </div>
                     <div className="w-full bg-slate-200/90 rounded-t-xl h-[100px] min-h-[100px] relative overflow-hidden shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent" />
@@ -96,8 +96,8 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                       </div>
                     </div>
                     <div className="text-center mb-3 w-full min-w-0 shrink-0">
-                      <div className="font-black text-white text-sm sm:text-base truncate w-full px-1">{first.name}</div>
-                      <div className="text-yellow-400 text-xs sm:text-sm font-bold">{first.points_won} pts</div>
+                      <div className="font-black text-white text-sm sm:text-base leading-tight break-words w-full px-1">{first.name}</div>
+                      <div className="text-yellow-400 text-xs sm:text-sm font-bold mt-0.5">{first.points_won} pts</div>
                     </div>
                     <div className="w-full bg-yellow-400 rounded-t-xl h-[140px] min-h-[140px] relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.3)] shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent" />
@@ -115,8 +115,8 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                       </div>
                     </div>
                     <div className="text-center mb-3 w-full min-w-0 shrink-0">
-                      <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{third.name}</div>
-                      <div className="text-amber-300 text-[10px] sm:text-xs font-semibold">{third.points_won} pts</div>
+                      <div className="font-bold text-white text-xs sm:text-sm leading-tight break-words w-full px-1">{third.name}</div>
+                      <div className="text-amber-300 text-[10px] sm:text-xs font-semibold mt-0.5">{third.points_won} pts</div>
                     </div>
                     <div className="w-full bg-amber-700/90 rounded-t-xl h-[70px] min-h-[70px] relative overflow-hidden shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
@@ -151,7 +151,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                         {medal ?? rank}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm sm:text-base font-bold truncate ${rank === 1 ? "text-yellow-400" : "text-white"}`}>
+                        <p className={`text-sm sm:text-base font-bold leading-tight break-words ${rank === 1 ? "text-yellow-400" : "text-white"}`}>
                           {player.name}
                         </p>
                       </div>
