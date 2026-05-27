@@ -48,7 +48,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-slate-50">
+      <DialogContent className="w-[95vw] sm:w-fit max-w-lg bg-slate-50">
         <DialogHeader>
           <DialogTitle className="text-xl font-black">Share Results</DialogTitle>
         </DialogHeader>
@@ -75,7 +75,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
           </div>
 
           {/* Preview container */}
-          <div className="bg-slate-200 rounded-2xl p-2 sm:p-4 flex justify-center overflow-auto max-h-[50vh] scrollbar-hide">
+          <div className="bg-slate-200 rounded-2xl p-2 sm:p-4 flex justify-center overflow-y-auto max-h-[60vh]">
              <div className="shadow-2xl rounded-2xl overflow-hidden w-full max-w-[400px] shrink-0">
                <ExportTemplate ref={printRef} session={session} players={players} variant={variant} />
              </div>
