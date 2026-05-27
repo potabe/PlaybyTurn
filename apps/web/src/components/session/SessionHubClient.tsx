@@ -666,9 +666,16 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         {/* Bracket tab */}
         {session?.is_knockout && (
           <TabsContent value="bracket" className="mt-4">
-            <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px] relative">
+            <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px] flex flex-col">
               {canEditSeeding && (
-                <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <div className="flex items-center justify-between p-4 border-b border-border/50">
+                  <div className="flex-1">
+                    {isEditMode && (
+                      <div className="inline-block bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-bold border border-primary/20">
+                        Select 2 teams to swap their positions
+                      </div>
+                    )}
+                  </div>
                   <Button
                     variant={isEditMode ? "default" : "outline"}
                     size="sm"
@@ -679,20 +686,17 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
                   </Button>
                 </div>
               )}
-              {isEditMode && (
-                <div className="absolute top-4 left-4 z-10 bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-bold border border-primary/20">
-                  Select 2 teams to swap their positions
-                </div>
-              )}
-              <TournamentBracket 
-                matches={matches ?? []} 
-                players={players ?? []} 
-                isAdmin={true} 
-                isEditMode={isEditMode}
-                onSwap={(slot1, slot2) => {
-                  swapSeeding.mutate({ slot1, slot2 });
-                }}
-              />
+              <div className="relative flex-1">
+                <TournamentBracket 
+                  matches={matches ?? []} 
+                  players={players ?? []} 
+                  isAdmin={true} 
+                  isEditMode={isEditMode}
+                  onSwap={(slot1, slot2) => {
+                    swapSeeding.mutate({ slot1, slot2 });
+                  }}
+                />
+              </div>
             </div>
           </TabsContent>
         )}
