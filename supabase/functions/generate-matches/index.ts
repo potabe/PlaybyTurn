@@ -10,6 +10,7 @@ import type {
   FormatType,
   TeamAssignment,
 } from "../_shared/types.ts";
+import { generateKnockoutBracket } from "./knockout.ts";
 
 // ============================================================
 // Rotation Queue: sorts players by priority rules
@@ -461,7 +462,7 @@ serve(async (req: Request) => {
     );
 
     const body: GenerateMatchesRequest = await req.json();
-    const { session_id, players, courts, format } = body;
+    const { session_id, players, courts, format, is_knockout, team_assignments } = body;
 
     if (!session_id || !players?.length || !courts?.length || !format) {
       return new Response(
@@ -470,6 +471,42 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── KNOCKOUT MODE ─────────────────────────────────────────
+    if (is_knockout) {
+      const result = generateKnockoutBracket(players, courts, format, team_assignments);
+      if (result.matches.length > 0) {
+        const matchRows = result.matches.map((m) => ({
+          id: m.id,
+          session_id,
+          court_id: courts[0].id, // assign first court by default or null
+          round_number: m.round,
+          match_order: m.matchOrder,
+          next_match_id: m.nextMatchId,
+          status: "PENDING",
+          team1_player1_id: m.team1?.player1?.id ?? null,
+          team1_player2_id: m.team1?.player2?.id ?? null,
+          team2_player1_id: m.team2?.player1?.id ?? null,
+          team2_player2_id: m.team2?.player2?.id ?? null,
+          score_data: {},
+          score_history: [],
+        }));
+
+        const { error: insertError } = await supabase.from("matches").insert(matchRows);
+        if (insertError) throw new Error(`Failed to insert knockout matches: ${insertError.message}`);
+
+        await supabase.from("sessions").update({ status: "ACTIVE" }).eq("id", session_id);
+      }
+
+      return new Response(JSON.stringify({
+        matches: result.matches, // this type doesn't perfectly match MatchAssignment, but frontend usually doesn't use it directly
+        resting_player_ids: [],
+        warnings: result.warnings,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── REGULAR MODE ──────────────────────────────────────────
     let result: { matches: MatchAssignment[]; resting: Player[]; warnings: string[] };
 
     switch (format as FormatType) {

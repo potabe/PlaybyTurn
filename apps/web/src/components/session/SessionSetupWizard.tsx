@@ -33,6 +33,7 @@ export interface SetupForm {
   title: string;
   sport: SportType | null;
   format: FormatType | null;
+  is_knockout: boolean;
   players: PlayerInput[];
   courtNames: string[];
   teamAssignments: TeamAssignmentInput[]; // used for FIXED_DOUBLES
@@ -69,6 +70,7 @@ export function SessionSetupWizard() {
     title: "",
     sport: null,
     format: null,
+    is_knockout: false,
     players: [
       { id: crypto.randomUUID(), name: "", gender: "MALE" },
       { id: crypto.randomUUID(), name: "", gender: "MALE" },
@@ -105,6 +107,7 @@ export function SessionSetupWizard() {
           title: sessionTitle,
           sport: form.sport,
           format: form.format,
+          is_knockout: form.is_knockout,
           status: "SETUP",
           spectator_code: spectatorCode,
         })

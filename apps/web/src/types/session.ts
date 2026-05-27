@@ -38,6 +38,7 @@ export interface Session {
   format: FormatType;
   status: SessionStatus;
   spectator_code: string;
+  is_knockout: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -87,6 +88,8 @@ export interface Match {
   winning_team: WinningTeam | null;
   score_data: ScoreData;
   score_history: ScoreData[];
+  match_order?: number | null;
+  next_match_id?: string | null;
   started_at: string | null;
   completed_at: string | null;
   created_at: string;
@@ -105,6 +108,7 @@ export interface SessionSetupForm {
   title: string;
   sport: SportType;
   format: FormatType;
+  is_knockout: boolean;
   players: PlayerInput[];
   courtNames: string[];
 }

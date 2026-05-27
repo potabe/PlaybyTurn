@@ -120,6 +120,12 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       }
 
       const winningTeam = winner;
+
+      // Update player stats
+      const winnerIds = winningTeam === "team1"
+        ? [match.team1_player1_id, match.team1_player2_id]
+        : [match.team2_player1_id, match.team2_player2_id];
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from("matches")
@@ -132,11 +138,39 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
         .eq("id", match.id);
       if (error) throw error;
 
+      // ── KNOCKOUT ADVANCE LOGIC ──
+      if (match.next_match_id) {
+        // Fetch next match
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: nextMatch } = await (supabase as any)
+          .from("matches")
+          .select("*")
+          .eq("id", match.next_match_id)
+          .single();
+        
+        if (nextMatch) {
+          const isTeam1Empty = !nextMatch.team1_player1_id && !nextMatch.team1_player2_id;
+          const updatePayload: Record<string, string | null> = {};
+          
+          if (isTeam1Empty) {
+            updatePayload.team1_player1_id = winnerIds[0] ?? null;
+            updatePayload.team1_player2_id = winnerIds[1] ?? null;
+          } else {
+            updatePayload.team2_player1_id = winnerIds[0] ?? null;
+            updatePayload.team2_player2_id = winnerIds[1] ?? null;
+          }
 
-      // Update player stats
-      const winnerIds = winningTeam === "team1"
-        ? [match.team1_player1_id, match.team1_player2_id]
-        : [match.team2_player1_id, match.team2_player2_id];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: nextError } = await (supabase as any)
+            .from("matches")
+            .update(updatePayload)
+            .eq("id", match.next_match_id);
+            
+          if (nextError) console.error("Failed to advance winner", nextError);
+        }
+      }
+
+
       const allIds = [
         match.team1_player1_id, match.team1_player2_id,
         match.team2_player1_id, match.team2_player2_id,

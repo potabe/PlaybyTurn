@@ -16,6 +16,7 @@ import {
 import { ShareResultModal } from "./ShareResultModal";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
+import { TournamentBracket } from "@/components/bracket/TournamentBracket";
 
 // ─── Leaderboard row ───────────────────────────────────────
 function LeaderboardRow({ player, rank }: { player: Player; rank: number }) {
@@ -563,19 +564,33 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs defaultValue="matches">
+        {/* Tabs */}
+      <Tabs defaultValue={session?.is_knockout ? "bracket" : "matches"}>
         <TabsList className="w-full rounded-xl h-10">
+          {session?.is_knockout && (
+            <TabsTrigger value="bracket" className="flex-1 rounded-lg text-xs font-semibold" id="tab-bracket">
+              <Trophy className="h-3.5 w-3.5 mr-1" /> Bracket
+            </TabsTrigger>
+          )}
           <TabsTrigger value="matches" className="flex-1 rounded-lg text-xs font-semibold" id="tab-matches">
             <Activity className="h-3.5 w-3.5 mr-1" /> Matches
           </TabsTrigger>
-          <TabsTrigger value="queue" className="flex-1 rounded-lg text-xs font-semibold" id="tab-queue">
-            <Clock className="h-3.5 w-3.5 mr-1" /> Queue
-          </TabsTrigger>
+          {!session?.is_knockout && (
+            <TabsTrigger value="queue" className="flex-1 rounded-lg text-xs font-semibold" id="tab-queue">
+              <Clock className="h-3.5 w-3.5 mr-1" /> Queue
+            </TabsTrigger>
+          )}
           <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-xs font-semibold" id="tab-leaderboard">
             <Trophy className="h-3.5 w-3.5 mr-1" /> Standings
           </TabsTrigger>
         </TabsList>
+
+        {/* Bracket tab */}
+        {session?.is_knockout && (
+          <TabsContent value="bracket" className="mt-4 bg-slate-50/50 rounded-2xl border border-border min-h-[300px]">
+            <TournamentBracket matches={matches ?? []} players={players ?? []} isAdmin={true} />
+          </TabsContent>
+        )}
 
         {/* Matches tab */}
         <TabsContent value="matches" className="space-y-3 mt-4">
@@ -625,9 +640,11 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         </TabsContent>
 
         {/* Queue tab */}
-        <TabsContent value="queue" className="mt-4">
-          <QueueSection players={players ?? []} matches={matches ?? []} />
-        </TabsContent>
+        {!session?.is_knockout && (
+          <TabsContent value="queue" className="mt-4">
+            <QueueSection players={players ?? []} matches={matches ?? []} />
+          </TabsContent>
+        )}
 
         {/* Leaderboard tab */}
         <TabsContent value="leaderboard" className="mt-4">

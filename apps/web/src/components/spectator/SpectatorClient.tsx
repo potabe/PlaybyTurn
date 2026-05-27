@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Trophy, Activity, Wifi } from "lucide-react";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
+import { TournamentBracket } from "@/components/bracket/TournamentBracket";
 
 interface Props {
   session: Session;
@@ -295,14 +296,26 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
           </section>
         )}
 
-        {/* Standings */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Trophy className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-bold uppercase tracking-wider">Standings</h2>
-          </div>
-          <StandingsTable players={players ?? []} />
-        </section>
+        {/* Bracket or Standings */}
+        {session.is_knockout ? (
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-bold uppercase tracking-wider">Tournament Bracket</h2>
+            </div>
+            <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px]">
+              <TournamentBracket matches={matches ?? []} players={players ?? []} />
+            </div>
+          </section>
+        ) : (
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-bold uppercase tracking-wider">Standings</h2>
+            </div>
+            <StandingsTable players={players ?? []} />
+          </section>
+        )}
 
         {/* No account needed notice */}
         <p className="text-center text-xs text-muted-foreground pb-8">

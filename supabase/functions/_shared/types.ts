@@ -40,6 +40,7 @@ export interface GenerateMatchesRequest {
   courts: Court[];
   sport: SportType;
   format: FormatType;
+  is_knockout?: boolean;
   team_assignments?: TeamAssignment[]; // for FIXED_DOUBLES
 }
 
