@@ -179,7 +179,16 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
 
       for (const playerId of allIds) {
         const isWinner = winnerIds.includes(playerId);
-        const player = playerMap[playerId];
+        
+        // Fetch fresh player data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: dbPlayer } = await (supabase as any)
+          .from("players")
+          .select("*")
+          .eq("id", playerId)
+          .single();
+          
+        const player = dbPlayer || playerMap[playerId];
         if (!player) continue;
 
         const team = (playerId === match.team1_player1_id || playerId === match.team1_player2_id) ? "team1" : "team2";
@@ -258,7 +267,16 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
 
       for (const playerId of allIds) {
         const isWinner = winnerIds.includes(playerId);
-        const player = playerMap[playerId];
+        
+        // Fetch fresh player data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: dbPlayer } = await (supabase as any)
+          .from("players")
+          .select("*")
+          .eq("id", playerId)
+          .single();
+          
+        const player = dbPlayer || playerMap[playerId];
         if (!player) continue;
 
         const team = (playerId === match.team1_player1_id || playerId === match.team1_player2_id) ? "team1" : "team2";
