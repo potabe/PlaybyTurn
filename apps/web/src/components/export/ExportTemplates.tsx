@@ -64,20 +64,20 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
           {/* Content */}
           {variant === "podium" ? (
             <div className="py-6">
-              <div className="flex items-end justify-center gap-2 sm:gap-4 h-[220px]">
+              <div className="flex items-end justify-center gap-2 sm:gap-4 h-[280px] sm:h-[300px]">
                 {/* 2nd Place */}
                 {second && (
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="relative mb-2">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-300 border-4 border-slate-400/50 flex items-center justify-center text-slate-600 text-xl shadow-lg shadow-slate-400/20">
+                  <div className="flex flex-col items-center flex-1 shrink-0">
+                    <div className="relative mb-2 shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-300 border-4 border-slate-400/50 flex items-center justify-center text-slate-600 text-xl shadow-lg shadow-slate-400/20 shrink-0">
                         🥈
                       </div>
                     </div>
-                    <div className="text-center mb-3 w-full">
+                    <div className="text-center mb-3 w-full shrink-0">
                       <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{second.name}</div>
                       <div className="text-slate-300 text-[10px] sm:text-xs font-semibold">{second.points_won} pts</div>
                     </div>
-                    <div className="w-full bg-slate-200/90 rounded-t-xl h-[100px] relative overflow-hidden">
+                    <div className="w-full bg-slate-200/90 rounded-t-xl h-[100px] relative overflow-hidden shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent" />
                       <div className="absolute bottom-4 w-full text-center text-slate-500 font-black text-2xl sm:text-3xl">2</div>
                     </div>
@@ -86,20 +86,20 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
 
                 {/* 1st Place */}
                 {first && (
-                  <div className="flex flex-col items-center flex-[1.2] z-10">
-                    <div className="relative mb-2">
+                  <div className="flex flex-col items-center flex-[1.2] z-10 shrink-0">
+                    <div className="relative mb-2 shrink-0">
                       <div className="absolute -top-5 left-1/2 -translate-x-1/2">
                         <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
                       </div>
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-yellow-400 border-4 border-yellow-200 flex items-center justify-center text-yellow-800 text-2xl sm:text-3xl shadow-xl shadow-yellow-500/30">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-yellow-400 border-4 border-yellow-200 flex items-center justify-center text-yellow-800 text-2xl sm:text-3xl shadow-xl shadow-yellow-500/30 shrink-0">
                         🥇
                       </div>
                     </div>
-                    <div className="text-center mb-3 w-full">
+                    <div className="text-center mb-3 w-full shrink-0">
                       <div className="font-black text-white text-sm sm:text-base truncate w-full px-1">{first.name}</div>
                       <div className="text-yellow-400 text-xs sm:text-sm font-bold">{first.points_won} pts</div>
                     </div>
-                    <div className="w-full bg-yellow-400 rounded-t-xl h-[140px] relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.3)]">
+                    <div className="w-full bg-yellow-400 rounded-t-xl h-[140px] relative overflow-hidden shadow-[0_0_30px_rgba(250,204,21,0.3)] shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent" />
                       <div className="absolute bottom-5 w-full text-center text-yellow-600 font-black text-4xl sm:text-5xl">1</div>
                     </div>
@@ -108,17 +108,17 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
 
                 {/* 3rd Place */}
                 {third && (
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="relative mb-2">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-600 border-4 border-amber-500/50 flex items-center justify-center text-amber-200 text-xl shadow-lg shadow-amber-600/20">
+                  <div className="flex flex-col items-center flex-1 shrink-0">
+                    <div className="relative mb-2 shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-600 border-4 border-amber-500/50 flex items-center justify-center text-amber-200 text-xl shadow-lg shadow-amber-600/20 shrink-0">
                         🥉
                       </div>
                     </div>
-                    <div className="text-center mb-3 w-full">
+                    <div className="text-center mb-3 w-full shrink-0">
                       <div className="font-bold text-white text-xs sm:text-sm truncate w-full px-1">{third.name}</div>
                       <div className="text-amber-300 text-[10px] sm:text-xs font-semibold">{third.points_won} pts</div>
                     </div>
-                    <div className="w-full bg-amber-700/90 rounded-t-xl h-[70px] relative overflow-hidden">
+                    <div className="w-full bg-amber-700/90 rounded-t-xl h-[70px] relative overflow-hidden shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                       <div className="absolute bottom-3 w-full text-center text-amber-900/60 font-black text-2xl sm:text-3xl">3</div>
                     </div>
