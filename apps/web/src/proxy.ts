@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/update-password"];
 // Routes that start with these prefixes are always public
 const PUBLIC_PREFIXES = ["/s/", "/auth/", "/api/"];
 
