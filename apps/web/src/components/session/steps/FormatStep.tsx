@@ -113,7 +113,7 @@ export function FormatStep({ form, setForm, onNext }: Props) {
         <button
           onClick={onNext}
           disabled={!form.format}
-          className="w-full bg-foreground text-background h-14 rounded-2xl font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-foreground/90 transition-colors"
+          className="w-full bg-primary text-primary-foreground h-14 rounded-2xl font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
         >
           Continue
         </button>
