@@ -490,10 +490,41 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const liveMatches = allLiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
   const doneMatches = allDoneMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
 
-  const sortedPlayers = [...(players ?? [])].sort((a, b) => {
+  let displayStandings = [...(players ?? [])].sort((a, b) => {
     if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
     return b.point_differential - a.point_differential;
   });
+
+  if (session?.format === "FIXED_DOUBLES") {
+    const pairs = new Map<string, Player>();
+    const playerMap = Object.fromEntries(displayStandings.map(p => [p.id, p]));
+    
+    (matches ?? []).forEach(m => {
+      const addTeam = (p1Id: string | null, p2Id: string | null) => {
+        if (!p1Id || !p2Id) return;
+        const [idA, idB] = [p1Id, p2Id].sort();
+        const key = `${idA}-${idB}`;
+        if (!pairs.has(key)) {
+          const p1 = playerMap[idA];
+          const p2 = playerMap[idB];
+          if (p1 && p2) {
+             pairs.set(key, {
+               ...p1,
+               id: key,
+               name: `${p1.name} & ${p2.name}`,
+             });
+          }
+        }
+      };
+      addTeam(m.team1_player1_id, m.team1_player2_id);
+      addTeam(m.team2_player1_id, m.team2_player2_id);
+    });
+
+    displayStandings = Array.from(pairs.values()).sort((a, b) => {
+      if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
+      return b.point_differential - a.point_differential;
+    });
+  }
 
   return (
     <div className="space-y-4 -mt-2">
@@ -649,10 +680,10 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         {/* Leaderboard tab */}
         <TabsContent value="leaderboard" className="mt-4">
           <div className="rounded-2xl border border-border overflow-hidden">
-            {sortedPlayers.length === 0 ? (
+            {displayStandings.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground text-sm">No standings yet</div>
             ) : (
-              sortedPlayers.map((p, i) => <LeaderboardRow key={p.id} player={p} rank={i + 1} />)
+              displayStandings.map((p, i) => <LeaderboardRow key={p.id} player={p} rank={i + 1} />)
             )}
           </div>
         </TabsContent>

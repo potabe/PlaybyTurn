@@ -214,6 +214,35 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   const activeMatches = allActiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
   const completedMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
 
+  let displayStandings = players ?? [];
+  if (session.format === "FIXED_DOUBLES") {
+    const pairs = new Map<string, Player>();
+    const playerMap = Object.fromEntries(displayStandings.map(p => [p.id, p]));
+    
+    (matches ?? []).forEach(m => {
+      const addTeam = (p1Id: string | null, p2Id: string | null) => {
+        if (!p1Id || !p2Id) return;
+        const [idA, idB] = [p1Id, p2Id].sort();
+        const key = `${idA}-${idB}`;
+        if (!pairs.has(key)) {
+          const p1 = playerMap[idA];
+          const p2 = playerMap[idB];
+          if (p1 && p2) {
+             pairs.set(key, {
+               ...p1,
+               id: key,
+               name: `${p1.name} & ${p2.name}`,
+             });
+          }
+        }
+      };
+      addTeam(m.team1_player1_id, m.team1_player2_id);
+      addTeam(m.team2_player1_id, m.team2_player2_id);
+    });
+
+    displayStandings = Array.from(pairs.values());
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* ── Header ── */}
@@ -313,7 +342,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
               <Trophy className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-bold uppercase tracking-wider">Standings</h2>
             </div>
-            <StandingsTable players={players ?? []} />
+            <StandingsTable players={displayStandings} />
           </section>
         )}
 
