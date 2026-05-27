@@ -55,6 +55,7 @@ export interface Database {
           format: FormatType;
           status: SessionStatus;
           spectator_code: string;
+          metadata: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -66,6 +67,7 @@ export interface Database {
           format: FormatType;
           status?: SessionStatus;
           spectator_code: string;
+          metadata?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -75,6 +77,7 @@ export interface Database {
           format?: FormatType;
           status?: SessionStatus;
           spectator_code?: string;
+          metadata?: Json | null;
           updated_at?: string;
         };
       };

@@ -40,6 +40,14 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
     setSelectedMaleId(null);
   }
 
+  function updateTeamName(idx: number, newName: string) {
+    setForm((f) => {
+      const newTeams = [...f.teamAssignments];
+      newTeams[idx] = { ...newTeams[idx], team_name: newName };
+      return { ...f, teamAssignments: newTeams };
+    });
+  }
+
   function removeTeam(idx: number) {
     setSelectedMaleId(null);
     setForm((f) => ({
@@ -105,28 +113,39 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 12, transition: { duration: 0.15 } }}
                   layout
-                  className="flex items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 shadow-sm"
+                  className="flex flex-col gap-2 rounded-xl border border-border bg-white px-3 py-2.5 shadow-sm"
                 >
-                  <span className="w-6 text-center text-xs font-black text-muted-foreground flex-shrink-0">
-                    T{idx + 1}
-                  </span>
-                  <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-semibold bg-blue-50 text-blue-700 rounded-lg px-2.5 py-1 truncate">
-                      💙 {male?.name}
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 text-center text-xs font-black text-muted-foreground flex-shrink-0">
+                      T{idx + 1}
                     </span>
-                    <span className="text-xs font-black text-muted-foreground flex-shrink-0">+</span>
-                    <span className="text-sm font-semibold bg-pink-50 text-pink-700 rounded-lg px-2.5 py-1 truncate">
-                      🩷 {female?.name}
-                    </span>
+                    <div className="flex-1 flex items-center gap-2 min-w-0">
+                      <span className="text-sm font-semibold bg-blue-50 text-blue-700 rounded-lg px-2.5 py-1 truncate">
+                        💙 {male?.name}
+                      </span>
+                      <span className="text-xs font-black text-muted-foreground flex-shrink-0">+</span>
+                      <span className="text-sm font-semibold bg-pink-50 text-pink-700 rounded-lg px-2.5 py-1 truncate">
+                        🩷 {female?.name}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeTeam(idx)}
+                      className="flex-shrink-0 p-1.5 rounded-lg hover:bg-muted transition-colors"
+                      aria-label={`Remove team ${idx + 1}`}
+                      id={`remove-team-${idx}-btn`}
+                    >
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeTeam(idx)}
-                    className="flex-shrink-0 p-1.5 rounded-lg hover:bg-muted transition-colors"
-                    aria-label={`Remove team ${idx + 1}`}
-                    id={`remove-team-${idx}-btn`}
-                  >
-                    <X className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
+                  <div className="pl-9 pr-8 mt-1">
+                    <input
+                      type="text"
+                      placeholder={`Custom Name (e.g. The Smashers)`}
+                      className="w-full text-xs font-bold bg-muted/30 border border-border/50 focus:border-primary/50 focus:bg-white rounded-lg px-3 py-2 outline-none transition-all placeholder:font-medium"
+                      value={team.team_name || ""}
+                      onChange={(e) => updateTeamName(idx, e.target.value)}
+                    />
+                  </div>
                 </motion.div>
               );
             })}

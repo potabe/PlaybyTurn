@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import type { Match, Player } from "@/types/session";
+import type { Match, Player, Session } from "@/types/session";
+import { getTeamName } from "@/lib/utils/team";
 
 export interface TeamSlot {
   matchId: string;
@@ -7,6 +8,7 @@ export interface TeamSlot {
 }
 
 interface TournamentBracketProps {
+  session: Session;
   matches: Match[];
   players: Player[];
   isAdmin?: boolean;
@@ -14,19 +16,7 @@ interface TournamentBracketProps {
   onSwap?: (slot1: TeamSlot, slot2: TeamSlot) => void;
 }
 
-// Helper to resolve player names
-function getTeamName(p1Id: string | null, p2Id: string | null, playersMap: Record<string, Player>) {
-  if (!p1Id) return "TBD";
-  const p1 = playersMap[p1Id]?.name ?? "Unknown";
-  if (p2Id) {
-    const p2 = playersMap[p2Id]?.name ?? "Unknown";
-    // Get initials or first names
-    return `${p1.split(" ")[0]} & ${p2.split(" ")[0]}`;
-  }
-  return p1;
-}
-
-export function TournamentBracket({ matches, players, isAdmin, isEditMode, onSwap }: TournamentBracketProps) {
+export function TournamentBracket({ session, matches, players, isAdmin, isEditMode, onSwap }: TournamentBracketProps) {
   const playersMap = Object.fromEntries(players.map((p) => [p.id, p]));
   const [selectedSlot, setSelectedSlot] = useState<TeamSlot | null>(null);
 
@@ -54,8 +44,8 @@ export function TournamentBracket({ matches, players, isAdmin, isEditMode, onSwa
             {/* Match Nodes */}
             <div className="flex flex-col flex-1 justify-around gap-4">
               {r.matches.map((match) => {
-                const team1Name = getTeamName(match.team1_player1_id, match.team1_player2_id, playersMap);
-                const team2Name = getTeamName(match.team2_player1_id, match.team2_player2_id, playersMap);
+                const team1Name = getTeamName(match.team1_player1_id, match.team1_player2_id, playersMap, session);
+                const team2Name = getTeamName(match.team2_player1_id, match.team2_player2_id, playersMap, session);
                 
                 const isT1Winner = match.winning_team === "TEAM1";
                 const isT2Winner = match.winning_team === "TEAM2";

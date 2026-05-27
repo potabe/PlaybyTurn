@@ -39,6 +39,7 @@ export interface Session {
   status: SessionStatus;
   spectator_code: string;
   is_knockout: boolean;
+  metadata?: { team_names?: Record<string, string> } | null;
   created_at: string;
   updated_at: string;
 }

@@ -8,6 +8,7 @@ import { Trophy, Activity, Wifi } from "lucide-react";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
 import { TournamentBracket } from "@/components/bracket/TournamentBracket";
+import { getTeamName } from "@/lib/utils/team";
 
 interface Props {
   session: Session;
@@ -21,22 +22,16 @@ function LiveMatchCard({
   match,
   players,
   court,
+  session,
 }: {
   match: Match;
   players: Player[];
   court?: Court;
+  session: Session;
 }) {
   const playerMap = Object.fromEntries(players.map((p) => [p.id, p]));
-  const team1 = [match.team1_player1_id, match.team1_player2_id]
-    .filter(Boolean)
-    .map((id) => playerMap[id!]?.name)
-    .filter(Boolean)
-    .join(" & ") || "TBD";
-  const team2 = [match.team2_player1_id, match.team2_player2_id]
-    .filter(Boolean)
-    .map((id) => playerMap[id!]?.name)
-    .filter(Boolean)
-    .join(" & ") || "TBD";
+  const team1 = getTeamName(match.team1_player1_id, match.team1_player2_id, playerMap, session);
+  const team2 = getTeamName(match.team2_player1_id, match.team2_player2_id, playerMap, session);
 
   const scoreData = match.score_data as Record<string, unknown>;
   const hasScore = Object.keys(scoreData).length > 0;
@@ -216,7 +211,6 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
     return isActive && !isCompletelyEmpty;
   });
   const activeMatches = allActiveMatches.filter((m) => selectedCourtId === "all" || m.court_id === selectedCourtId);
-  const completedMatches = (matches ?? []).filter((m) => m.status === "COMPLETED");
 
   let displayStandings = players ?? [];
   if (session.format === "FIXED_DOUBLES") {
@@ -235,7 +229,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
              pairs.set(key, {
                ...p1,
                id: key,
-               name: `${p1.name} & ${p2.name}`,
+               name: getTeamName(idA, idB, playerMap, session),
              });
           }
         }
@@ -321,7 +315,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
               ) : (
                 activeMatches.map((m) => (
                   <div key={m.id} className="snap-start">
-                    <LiveMatchCard match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} />
+                    <LiveMatchCard match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} session={session} />
                   </div>
                 ))
               )}
@@ -337,7 +331,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
               <h2 className="text-sm font-bold uppercase tracking-wider">Tournament Bracket</h2>
             </div>
             <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px]">
-              <TournamentBracket matches={matches ?? []} players={players ?? []} />
+              <TournamentBracket session={session} matches={matches ?? []} players={players ?? []} />
             </div>
           </section>
         ) : (

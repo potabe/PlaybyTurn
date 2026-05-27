@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import type { Match, Session, Player } from "@/types/session";
 import type { ScoreData, Team } from "@/types/scoring";
 import { SPORT_LABELS } from "@/lib/utils/format";
+import { getTeamName } from "@/lib/utils/team";
 
 interface Props {
   initialMatch: Match;
@@ -57,8 +58,8 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
   const t1p2 = match.team1_player2_id ? playerMap[match.team1_player2_id] : null;
   const t2p1 = match.team2_player1_id ? playerMap[match.team2_player1_id] : null;
   const t2p2 = match.team2_player2_id ? playerMap[match.team2_player2_id] : null;
-  const team1Name = [t1p1?.name, t1p2?.name].filter(Boolean).join(" & ");
-  const team2Name = [t2p1?.name, t2p2?.name].filter(Boolean).join(" & ");
+  const team1Name = getTeamName(match.team1_player1_id, match.team1_player2_id, playerMap, session);
+  const team2Name = getTeamName(match.team2_player1_id, match.team2_player2_id, playerMap, session);
 
   // ── Score display ──────────────────────────────────────
   const display = engine.getDisplayScore(scoreState);

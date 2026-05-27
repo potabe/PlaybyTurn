@@ -27,6 +27,7 @@ export interface PlayerInput {
 export interface TeamAssignmentInput {
   player1_id: string; // local ID (male)
   player2_id: string; // local ID (female)
+  team_name?: string; // custom team name
 }
 
 export interface SetupForm {
@@ -98,6 +99,17 @@ export function SessionSetupWizard() {
         form.title.trim() ||
         `${form.sport} Session — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 
+      // Build metadata if there are custom team names
+      const metadata: { team_names?: Record<string, string> } = {};
+      if (form.format === "FIXED_DOUBLES" && form.teamAssignments.length > 0) {
+        const teamNames: Record<string, string> = {};
+        let hasCustomNames = false;
+        
+        // We need to map local IDs to DB IDs later, but wait: 
+        // We haven't created players yet!
+        // So we can't save metadata yet. We must update the session AFTER creating players.
+      }
+
       // 1. Create session
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: session, error: sessionError } = await (supabase as any)
@@ -158,9 +170,31 @@ export function SessionSetupWizard() {
               .map((ta) => ({
                 player1_id: localToDbId.get(ta.player1_id) ?? "",
                 player2_id: localToDbId.get(ta.player2_id) ?? "",
+                team_name: ta.team_name,
               }))
               .filter((ta) => ta.player1_id && ta.player2_id)
           : undefined;
+
+      // 4.5 Update session metadata with team names
+      if (resolvedTeams) {
+        const teamNames: Record<string, string> = {};
+        let hasCustomNames = false;
+        for (const team of resolvedTeams) {
+          if (team.team_name?.trim()) {
+            const sortedIds = [team.player1_id, team.player2_id].sort().join("_");
+            teamNames[sortedIds] = team.team_name.trim();
+            hasCustomNames = true;
+          }
+        }
+
+        if (hasCustomNames) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase as any)
+            .from("sessions")
+            .update({ metadata: { team_names: teamNames } })
+            .eq("id", sessionData.id);
+        }
+      }
 
       // 5. Call Edge Function to generate matches
       const { data: matchResult, error: fnError } = await supabase.functions.invoke(

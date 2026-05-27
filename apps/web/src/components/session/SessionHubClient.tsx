@@ -17,6 +17,7 @@ import { ShareResultModal } from "./ShareResultModal";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
 import { TournamentBracket, type TeamSlot } from "@/components/bracket/TournamentBracket";
+import { getTeamName } from "@/lib/utils/team";
 
 // ─── Leaderboard row ───────────────────────────────────────
 function LeaderboardRow({ player, rank }: { player: Player; rank: number }) {
@@ -74,18 +75,14 @@ function LeaderboardRow({ player, rank }: { player: Player; rank: number }) {
 
 // ─── Match card ────────────────────────────────────────────
 function MatchCard({
-  match, players, court, sessionId,
+  match, players, court, session,
 }: {
-  match: Match; players: Player[]; court?: Court; sessionId: string;
+  match: Match; players: Player[]; court?: Court; session: Session;
 }) {
   const playerMap = Object.fromEntries(players.map((p) => [p.id, p]));
-  const t1p1 = match.team1_player1_id ? playerMap[match.team1_player1_id] : null;
-  const t1p2 = match.team1_player2_id ? playerMap[match.team1_player2_id] : null;
-  const t2p1 = match.team2_player1_id ? playerMap[match.team2_player1_id] : null;
-  const t2p2 = match.team2_player2_id ? playerMap[match.team2_player2_id] : null;
-
-  const team1 = [t1p1?.name, t1p2?.name].filter(Boolean).join(" & ") || "TBD";
-  const team2 = [t2p1?.name, t2p2?.name].filter(Boolean).join(" & ") || "TBD";
+  
+  const team1 = getTeamName(match.team1_player1_id, match.team1_player2_id, playerMap, session);
+  const team2 = getTeamName(match.team2_player1_id, match.team2_player2_id, playerMap, session);
 
   const statusColors = {
     PENDING: "bg-muted text-muted-foreground",
@@ -95,7 +92,7 @@ function MatchCard({
   };
 
   return (
-    <Link href={`/sessions/${sessionId}/match/${match.id}`}>
+    <Link href={`/sessions/${session.id}/match/${match.id}`}>
       <div className="group rounded-2xl border border-border bg-white p-4 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-muted-foreground">
@@ -569,7 +566,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
              pairs.set(key, {
                ...p1,
                id: key,
-               name: `${p1.name} & ${p2.name}`,
+               name: getTeamName(idA, idB, playerMap, session),
              });
           }
         }
@@ -699,6 +696,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
               )}
               <div className="relative flex-1">
                 <TournamentBracket 
+                  session={session!}
                   matches={matches ?? []} 
                   players={players ?? []} 
                   isAdmin={true} 
@@ -747,13 +745,13 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
             </div>
           )}
           {liveMatches.map((m) => (
-            <MatchCard key={m.id} match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} sessionId={initialSession.id} />
+            <MatchCard key={m.id} match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} session={session!} />
           ))}
           {doneMatches.length > 0 && (
             <>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest pt-2">Completed</p>
               {doneMatches.map((m) => (
-                <MatchCard key={m.id} match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} sessionId={initialSession.id} />
+                <MatchCard key={m.id} match={m} players={players ?? []} court={courtMap[m.court_id ?? ""]} session={session!} />
               ))}
             </>
           )}
