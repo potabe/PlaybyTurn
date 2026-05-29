@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { IconArrowRight } from "@tabler/icons-react";
 
 export function CTASection() {
   const ref = useRef(null);
@@ -41,7 +41,7 @@ export function CTASection() {
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground px-10 py-4 text-lg font-bold shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1 transition-all duration-200"
         >
           Get Started — It's Free
-          <ArrowRight className="h-5 w-5" />
+          <IconArrowRight className="h-5 w-5" />
         </Link>
 
         <p className="mt-6 text-sm text-muted-foreground">

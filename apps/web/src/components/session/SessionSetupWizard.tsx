@@ -13,7 +13,7 @@ import { PlayersStep } from "@/components/session/steps/PlayersStep";
 import { CourtsStep } from "@/components/session/steps/CourtsStep";
 import { TeamsStep } from "@/components/session/steps/TeamsStep";
 import { ReviewStep } from "@/components/session/steps/ReviewStep";
-import { ArrowLeft, X } from "lucide-react";
+import { IconArrowLeft, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import type { SportType, FormatType, GenderType } from "@/types/session";
 
@@ -255,7 +255,7 @@ export function SessionSetupWizard() {
               className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
               disabled={stepIdx === 0}
             >
-              {stepIdx > 0 && <ArrowLeft className="h-4 w-4" />}
+              {stepIdx > 0 && <IconArrowLeft className="h-4 w-4" />}
             </button>
 
             <div className="text-center">
@@ -270,7 +270,7 @@ export function SessionSetupWizard() {
               className="text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Cancel"
             >
-              <X className="h-4 w-4" />
+              <IconX className="h-4 w-4" />
             </Link>
           </div>
 

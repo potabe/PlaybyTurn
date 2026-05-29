@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, MapPin } from "lucide-react";
+import { IconPlus, IconTrash, IconMapPin } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { SetupForm } from "@/components/session/SessionSetupWizard";
@@ -62,7 +62,7 @@ export function CourtsStep({ form, setForm, onNext }: Props) {
             >
               <div className="flex items-center gap-2">
                 <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/8">
-                  <MapPin className="h-4 w-4 text-primary" />
+                  <IconMapPin className="h-4 w-4 text-primary" />
                 </div>
 
                 <Input
@@ -80,7 +80,7 @@ export function CourtsStep({ form, setForm, onNext }: Props) {
                     className="flex-shrink-0 p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-colors"
                     aria-label={`Remove court ${idx + 1}`}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <IconTrash className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
@@ -96,7 +96,7 @@ export function CourtsStep({ form, setForm, onNext }: Props) {
         className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors mb-8"
         id="add-court-btn"
       >
-        <Plus className="h-4 w-4" />
+        <IconPlus className="h-4 w-4" />
         Add another court
       </button>
 

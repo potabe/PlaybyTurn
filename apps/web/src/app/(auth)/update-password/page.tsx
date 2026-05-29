@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { IconLock, IconEye, IconEyeOff, IconLoader2 } from "@tabler/icons-react";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
@@ -58,7 +58,7 @@ export default function UpdatePasswordPage() {
             New Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconLock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -76,9 +76,9 @@ export default function UpdatePasswordPage() {
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <IconEyeOff className="h-4 w-4" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <IconEye className="h-4 w-4" />
               )}
             </button>
           </div>
@@ -90,7 +90,7 @@ export default function UpdatePasswordPage() {
           disabled={isLoading || !password}
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <IconLoader2 className="h-4 w-4 animate-spin" />
           ) : (
             "Update Password"
           )}

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Trophy, Activity, TrendingUp, Users, ChevronDown, ChevronUp, X } from "lucide-react";
+import { IconSearch, IconTrophy, IconActivity, IconTrendingUp, IconUsers, IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { SPORT_EMOJIS, SPORT_LABELS } from "@/lib/utils/format";
 import type { Session, Player } from "@/types/session";
@@ -182,7 +182,7 @@ function PlayerDetailModal({
               className="rounded-xl p-1.5 hover:bg-muted transition-colors"
               id="close-player-modal-btn"
             >
-              <X className="h-5 w-5 text-muted-foreground" />
+              <IconX className="h-5 w-5 text-muted-foreground" />
             </button>
           </div>
         </div>
@@ -340,30 +340,30 @@ export function StatsClient({ sessions, players }: Props) {
           <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-primary/10 px-4 py-3 text-center">
             <p className="text-2xl font-black">{uniquePlayers}</p>
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mt-0.5">
-              <Users className="h-3 w-3" /> Players
+              <IconUsers className="h-3 w-3" /> Players
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 px-4 py-3 text-center">
             <p className="text-2xl font-black">{totalMatches}</p>
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mt-0.5">
-              <Activity className="h-3 w-3" /> Matches
+              <IconActivity className="h-3 w-3" /> Matches
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 px-4 py-3 text-center">
             <p className="text-2xl font-black">{avgWinRate}%</p>
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mt-0.5">
-              <TrendingUp className="h-3 w-3" /> Avg Win Rate
+              <IconTrendingUp className="h-3 w-3" /> Avg Win Rate
             </p>
           </div>
         </div>
       )}
 
-      {/* ── Search & filters ── */}
+      {/* ── IconSearch & filters ── */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search player..."
+            placeholder="IconSearch player..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-10 rounded-xl"
@@ -421,7 +421,7 @@ export function StatsClient({ sessions, players }: Props) {
             >
               {opt.label}
               {sortKey === opt.key && (
-                sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                sortAsc ? <IconChevronUp className="h-3 w-3" /> : <IconChevronDown className="h-3 w-3" />
               )}
             </button>
           ))}

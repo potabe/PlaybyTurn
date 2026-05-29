@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Loader2, Zap, AlertTriangle, Users, MapPin, Trophy } from "lucide-react";
+import { IconLoader2, IconBolt, IconAlertTriangle, IconUsers, IconMapPin, IconTrophy } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -95,7 +95,7 @@ export function ReviewStep({ form, onBack, onSubmit, isSubmitting, error }: Prop
       {/* Player list preview */}
       <div className="mb-6">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5" />
+          <IconUsers className="h-3.5 w-3.5" />
           Roster
         </p>
         <div className="flex flex-wrap gap-2">
@@ -117,7 +117,7 @@ export function ReviewStep({ form, onBack, onSubmit, isSubmitting, error }: Prop
       {/* Error */}
       {error && (
         <div className="mb-5 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          <IconAlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
@@ -131,12 +131,12 @@ export function ReviewStep({ form, onBack, onSubmit, isSubmitting, error }: Prop
       >
         {isSubmitting ? (
           <span className="flex items-center gap-2">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <IconLoader2 className="h-5 w-5 animate-spin" />
             Generating matches…
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
+            <IconBolt className="h-5 w-5" />
             Generate Matches
           </span>
         )}

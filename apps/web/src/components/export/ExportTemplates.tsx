@@ -1,6 +1,6 @@
 import React from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Trophy, Activity, Medal } from "lucide-react";
+import { IconTrophy, IconActivity, IconMedal } from "@tabler/icons-react";
 import { SPORT_EMOJIS, SPORT_LABELS } from "@/lib/utils/format";
 import type { Session, Player } from "@/types/session";
 
@@ -89,7 +89,7 @@ export const ExportTemplate = React.forwardRef<HTMLDivElement, ExportTemplatePro
                   <div className="flex flex-col items-center flex-[1.2] z-10 min-w-0">
                     <div className="relative mb-2 shrink-0">
                       <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                        <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
+                        <IconTrophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
                       </div>
                       <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-yellow-400 border-4 border-yellow-200 flex items-center justify-center text-yellow-800 text-2xl sm:text-3xl shadow-xl shadow-yellow-500/30 shrink-0">
                         🥇

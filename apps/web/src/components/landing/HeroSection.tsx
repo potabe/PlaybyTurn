@@ -2,7 +2,7 @@
 
 import { motion, type Variants, type Easing } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Zap } from "lucide-react";
+import { IconArrowRight, IconBolt } from "@tabler/icons-react";
 
 const SPORT_ITEMS = [
   { emoji: "🎾", label: "Padel", color: "bg-blue-100 text-blue-600" },
@@ -62,7 +62,7 @@ export function HeroSection() {
         {/* Badge */}
         <motion.div variants={item} className="mb-6 inline-flex">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm font-medium text-primary">
-            <Zap className="h-3.5 w-3.5" />
+            <IconBolt className="h-3.5 w-3.5" />
             Smart Session Organizer
           </span>
         </motion.div>
@@ -97,7 +97,7 @@ export function HeroSection() {
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground px-8 py-4 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200"
           >
             Create Free Session
-            <ArrowRight className="h-4 w-4" />
+            <IconArrowRight className="h-4 w-4" />
           </Link>
           <Link
             href="/login"

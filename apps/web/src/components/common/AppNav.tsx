@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, BarChart3, LogOut, UserCircle, ChevronDown, Download, Moon, Sun } from "lucide-react";
+import { IconLayoutDashboard, IconChartBar, IconLogout, IconUserCircle, IconChevronDown, IconDownload, IconMoon, IconSun } from "@tabler/icons-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useTheme } from "next-themes";
 
@@ -58,7 +58,7 @@ export function AppNav() {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <LayoutDashboard className="h-3.5 w-3.5" />
+            <IconLayoutDashboard className="h-3.5 w-3.5" />
             Sessions
           </Link>
           <Link
@@ -70,7 +70,7 @@ export function AppNav() {
             }`}
             id="nav-stats-link"
           >
-            <BarChart3 className="h-3.5 w-3.5" />
+            <IconChartBar className="h-3.5 w-3.5" />
             Stats
           </Link>
         </nav>
@@ -91,7 +91,7 @@ export function AppNav() {
             <span className="hidden sm:block text-sm font-medium max-w-24 truncate">
               {mounted ? (profile?.name ?? user?.email?.split("@")[0] ?? "User") : "..."}
             </span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <IconChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 rounded-xl">
             <div className="px-1.5 py-1 text-xs text-muted-foreground font-normal mb-1">
@@ -102,7 +102,7 @@ export function AppNav() {
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => router.push("/dashboard")}
             >
-              <LayoutDashboard className="h-4 w-4" />
+              <IconLayoutDashboard className="h-4 w-4" />
               Dashboard
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -110,7 +110,7 @@ export function AppNav() {
               onClick={() => router.push("/stats")}
               id="dropdown-stats-link"
             >
-              <BarChart3 className="h-4 w-4" />
+              <IconChartBar className="h-4 w-4" />
               Player Stats
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -118,7 +118,7 @@ export function AppNav() {
               onClick={() => router.push("/profile")}
               id="dropdown-profile-link"
             >
-              <UserCircle className="h-4 w-4" />
+              <IconUserCircle className="h-4 w-4" />
               Profile & Settings
             </DropdownMenuItem>
             {isInstallable && !isStandalone && (
@@ -133,7 +133,7 @@ export function AppNav() {
                     }
                   }}
                 >
-                  <Download className="h-4 w-4" />
+                  <IconDownload className="h-4 w-4" />
                   Install App
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -148,7 +148,7 @@ export function AppNav() {
               }}
             >
               <div className="flex items-center gap-2">
-                {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {mounted && theme === "dark" ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
                 <span>Theme</span>
               </div>
               <span className="text-xs text-muted-foreground capitalize">
@@ -162,7 +162,7 @@ export function AppNav() {
               onClick={signOut}
               id="signout-btn"
             >
-              <LogOut className="h-4 w-4" />
+              <IconLogout className="h-4 w-4" />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

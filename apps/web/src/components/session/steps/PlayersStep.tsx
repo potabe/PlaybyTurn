@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, User, AlertTriangle } from "lucide-react";
+import { IconPlus, IconTrash, IconUser, IconAlertTriangle } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { SetupForm, PlayerInput } from "@/components/session/SessionSetupWizard";
@@ -146,7 +146,7 @@ export function PlayersStep({ form, setForm, onNext }: Props) {
 
                 {/* Name input */}
                 <div className="relative flex-1">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <IconUser className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     id={`player-name-${idx}`}
                     placeholder={`Player ${idx + 1}`}
@@ -171,7 +171,7 @@ export function PlayersStep({ form, setForm, onNext }: Props) {
                     className="flex-shrink-0 p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-colors"
                     aria-label={`Remove player ${idx + 1}`}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <IconTrash className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
@@ -187,7 +187,7 @@ export function PlayersStep({ form, setForm, onNext }: Props) {
         className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors mb-6"
         id="add-player-btn"
       >
-        <Plus className="h-4 w-4" />
+        <IconPlus className="h-4 w-4" />
         Add player
       </button>
 
@@ -204,7 +204,7 @@ export function PlayersStep({ form, setForm, onNext }: Props) {
                 : "bg-destructive/8 border border-destructive/20 text-destructive"
             }`}
           >
-            <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <IconAlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <span>{validationError}</span>
           </motion.div>
         )}

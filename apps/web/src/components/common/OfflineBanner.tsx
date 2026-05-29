@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WifiOff } from "lucide-react";
+import { IconWifiOff } from "@tabler/icons-react";
 
 export function OfflineBanner() {
   const [isOffline, setIsOffline] = useState(false);
@@ -51,7 +51,7 @@ export function OfflineBanner() {
         >
           {isOffline ? (
             <>
-              <WifiOff className="h-4 w-4 flex-shrink-0" />
+              <IconWifiOff className="h-4 w-4 flex-shrink-0" />
               You are offline — scores will sync when reconnected
             </>
           ) : (

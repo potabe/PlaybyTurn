@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shuffle, X, ChevronRight, AlertTriangle } from "lucide-react";
+import { IconArrowsShuffle, IconX, IconChevronRight, IconAlertTriangle } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import type { SetupForm, TeamAssignmentInput } from "../SessionSetupWizard";
 
@@ -88,7 +88,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
         className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-primary/30 text-primary font-bold text-sm hover:bg-primary/5 hover:border-primary/50 transition-all active:scale-98"
         id="randomize-teams-btn"
       >
-        <Shuffle className="h-4 w-4" />
+        <IconArrowsShuffle className="h-4 w-4" />
         Randomize All Teams
       </button>
 
@@ -134,7 +134,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
                       aria-label={`Remove team ${idx + 1}`}
                       id={`remove-team-${idx}-btn`}
                     >
-                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                      <IconX className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
                   </div>
                   <div className="pl-9 pr-8 mt-1">
@@ -226,7 +226,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
       {/* Gender mismatch warning */}
       {hasMismatch && (
         <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-3">
-          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <IconAlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-amber-800">
             You have {males.length} male(s) and {females.length} female(s).{" "}
             {Math.abs(males.length - females.length)} player(s) won&apos;t be assigned to a team.
@@ -242,7 +242,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
         id="teams-next-btn"
       >
         Continue with {teams.length} team{teams.length !== 1 ? "s" : ""}
-        <ChevronRight className="h-5 w-5 ml-1" />
+        <IconChevronRight className="h-5 w-5 ml-1" />
       </Button>
     </div>
   );

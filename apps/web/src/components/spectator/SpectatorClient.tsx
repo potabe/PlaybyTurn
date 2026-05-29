@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { Trophy, Activity, Wifi } from "lucide-react";
+import { IconTrophy, IconActivity, IconWifi } from "@tabler/icons-react";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
 import { TournamentBracket } from "@/components/bracket/TournamentBracket";
@@ -248,7 +248,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <span className="text-xl font-black gradient-text">UrTurn</span>
           <div className="flex items-center gap-2 rounded-full bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5">
-            <Wifi className="h-3.5 w-3.5" />
+            <IconWifi className="h-3.5 w-3.5" />
             Live
           </div>
         </div>
@@ -278,7 +278,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
         {allActiveMatches.length > 0 && (
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <Activity className="h-4 w-4 text-green-600" />
+              <IconActivity className="h-4 w-4 text-green-600" />
               <h2 className="text-sm font-bold text-green-700 uppercase tracking-wider">On Court</h2>
             </div>
             
@@ -327,7 +327,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
         {session.is_knockout ? (
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <Trophy className="h-4 w-4 text-primary" />
+              <IconTrophy className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-bold uppercase tracking-wider">Tournament Bracket</h2>
             </div>
             <div className="bg-muted/30 rounded-2xl border border-border min-h-[300px]">
@@ -337,7 +337,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
         ) : (
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <Trophy className="h-4 w-4 text-primary" />
+              <IconTrophy className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-bold uppercase tracking-wider">Standings</h2>
             </div>
             <StandingsTable players={displayStandings} />

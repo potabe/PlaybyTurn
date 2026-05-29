@@ -7,10 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeft, Camera, Check, Loader2, LogOut,
-  User, Mail, Shield, Trash2, ChevronRight, Download, Share, Plus, X as XIcon, Trophy, Moon, Sun, Monitor
-} from "lucide-react";
+import { IconArrowLeft, IconCamera, IconCheck, IconLoader2, IconLogout, IconUser, IconMail, IconShield, IconTrash, IconChevronRight, IconDownload, IconShare, IconPlus, IconX as IconX, IconTrophy, IconMoon, IconSun, IconDeviceDesktop } from "@tabler/icons-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { SPORT_EMOJIS, SPORT_LABELS } from "@/lib/utils/format";
 import type { SportType, SkillLevel } from "@/types/session";
@@ -52,10 +49,10 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-6">
           <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
             <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
-              <Share className="w-5 h-5" />
+              <IconShare className="w-5 h-5" />
             </div>
             <p className="text-sm font-semibold text-slate-700 leading-tight">
-              1. Tap the <span className="font-black text-primary">Share</span> button in your Safari menu bar.
+              1. Tap the <span className="font-black text-primary">IconShare</span> button in your Safari menu bar.
             </p>
           </div>
           <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
@@ -99,7 +96,7 @@ function Row({
         {value && <p className="text-xs text-muted-foreground truncate mt-0.5">{value}</p>}
       </div>
       {onClick && showArrow && (
-        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <IconChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       )}
     </button>
   );
@@ -167,7 +164,7 @@ function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
             <p className="text-xs text-muted-foreground mt-0.5">Select your skill level for each sport</p>
           </div>
           <button onClick={onCancel} className="p-2 bg-card rounded-full text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors shadow-sm border border-border">
-            <XIcon className="h-5 w-5" />
+            <IconX className="h-5 w-5" />
           </button>
         </div>
         
@@ -209,7 +206,7 @@ function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
             onClick={() => onSave(skills as Record<SportType, SkillLevel>)}
             disabled={isSaving}
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4 mr-1.5" />Save Skills</>}
+            {isSaving ? <IconLoader2 className="h-4 w-4 animate-spin" /> : <><IconCheck className="h-4 w-4 mr-1.5" />Save Skills</>}
           </Button>
         </div>
       </motion.div>
@@ -262,7 +259,7 @@ function EditNameModal({ currentName, onSave, onCancel, isSaving }: {
               onClick={() => onSave(name.trim())}
               disabled={!name.trim() || isSaving}
             >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4 mr-1.5" />Save</>}
+              {isSaving ? <IconLoader2 className="h-4 w-4 animate-spin" /> : <><IconCheck className="h-4 w-4 mr-1.5" />Save</>}
             </Button>
           </div>
         </div>
@@ -297,7 +294,7 @@ function ConfirmModal({ title, description, confirmLabel, onConfirm, onCancel, i
       >
         <div className="p-6 text-center">
           <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${isDestructive ? "bg-destructive/10" : "bg-primary/10"}`}>
-            {isDestructive ? <Trash2 className="h-6 w-6 text-destructive" /> : <Shield className="h-6 w-6 text-primary" />}
+            {isDestructive ? <IconTrash className="h-6 w-6 text-destructive" /> : <IconShield className="h-6 w-6 text-primary" />}
           </div>
           <h3 className="font-black text-lg">{title}</h3>
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{description}</p>
@@ -311,7 +308,7 @@ function ConfirmModal({ title, description, confirmLabel, onConfirm, onCancel, i
             onClick={onConfirm}
             disabled={isPending}
           >
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : confirmLabel}
+            {isPending ? <IconLoader2 className="h-4 w-4 animate-spin" /> : confirmLabel}
           </Button>
         </div>
       </motion.div>
@@ -473,7 +470,7 @@ export function ProfileClient() {
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <IconArrowLeft className="h-4 w-4" />
           Back
         </button>
         <h1 className="text-2xl font-black tracking-tight">My Profile</h1>
@@ -498,9 +495,9 @@ export function ProfileClient() {
                 className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-white dark:border-card shadow hover:bg-primary/90 transition-colors"
               >
                 {isUploadingAvatar ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Camera className="h-3.5 w-3.5" />
+                  <IconCamera className="h-3.5 w-3.5" />
                 )}
               </button>
               <input
@@ -529,7 +526,7 @@ export function ProfileClient() {
             {(!localProfile?.skill_levels || Object.keys(localProfile.skill_levels).length === 0) ? (
               <div className="text-center py-4">
                 <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-3">
-                  <Trophy className="h-5 w-5 text-slate-300" />
+                  <IconTrophy className="h-5 w-5 text-slate-300" />
                 </div>
                 <p className="text-sm font-semibold text-slate-500">No sports added yet</p>
                 <p className="text-xs text-slate-400 mt-1">Showcase your skills on your profile</p>
@@ -555,22 +552,22 @@ export function ProfileClient() {
               className="w-full mt-4 h-10 rounded-xl font-bold border-dashed border-2 hover:border-primary/50 hover:bg-primary/5 text-primary"
               onClick={() => setModal("skills")}
             >
-              <Plus className="h-4 w-4 mr-1.5" /> Edit Skills
+              <IconPlus className="h-4 w-4 mr-1.5" /> Edit Skills
             </Button>
           </div>
         </Section>
 
         {/* Account */}
         <Section title="Account">
-          <Row icon={User} label="Display Name" value={localProfile?.name ?? "Not set"} onClick={() => setModal("name")} />
-          <Row icon={Mail} label="Email Address" value={user?.email ?? "—"} showArrow={false} />
+          <Row icon={IconUser} label="Display Name" value={localProfile?.name ?? "Not set"} onClick={() => setModal("name")} />
+          <Row icon={IconMail} label="Email Address" value={user?.email ?? "—"} showArrow={false} />
         </Section>
 
         {/* Avatar */}
         {localProfile?.avatar_url && (
           <Section title="Avatar">
             <Row
-              icon={Trash2}
+              icon={IconTrash}
               label="Remove Avatar"
               value="Reset to initials avatar"
               onClick={handleRemoveAvatar}
@@ -583,7 +580,7 @@ export function ProfileClient() {
         {isInstallable && !isStandalone && (
           <Section title="App">
             <Row
-              icon={Download}
+              icon={IconDownload}
               label="Install App"
               value="Add UrTurn to your home screen"
               onClick={handleInstallClick}
@@ -603,7 +600,7 @@ export function ProfileClient() {
                     theme === "light" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  <Sun className="h-5 w-5" />
+                  <IconSun className="h-5 w-5" />
                   <span className="text-xs font-bold">Light</span>
                 </button>
                 <button
@@ -612,7 +609,7 @@ export function ProfileClient() {
                     theme === "dark" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  <Moon className="h-5 w-5" />
+                  <IconMoon className="h-5 w-5" />
                   <span className="text-xs font-bold">Dark</span>
                 </button>
               </div>
@@ -622,13 +619,13 @@ export function ProfileClient() {
 
         {/* Account security */}
         <Section title="Security">
-          <Row icon={Shield} label="Sign-in Method" value="GitHub OAuth" showArrow={false} />
+          <Row icon={IconShield} label="Sign-in Method" value="GitHub OAuth" showArrow={false} />
         </Section>
 
         {/* Danger zone */}
         <Section title="Session">
           <Row
-            icon={LogOut}
+            icon={IconLogout}
             label="Sign Out"
             value="You'll be redirected to login"
             onClick={() => setModal("signout")}
@@ -679,7 +676,7 @@ export function ProfileClient() {
             toast.ok ? "bg-foreground text-background" : "bg-destructive text-white"
           }`}
         >
-          {toast.ok ? <Check className="h-4 w-4" /> : null}
+          {toast.ok ? <IconCheck className="h-4 w-4" /> : null}
           {toast.msg}
         </motion.div>
       )}

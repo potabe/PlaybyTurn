@@ -7,7 +7,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar, Clock, Zap, Trash2, X, AlertTriangle } from "lucide-react";
+import { IconPlus, IconCalendar, IconClock, IconBolt, IconTrash, IconX, IconAlertTriangle } from "@tabler/icons-react";
 import { formatRelativeTime, SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session } from "@/types/session";
 
@@ -54,7 +54,7 @@ function DeleteConfirmModal({
         <div className="px-6 pt-6 pb-8">
           {/* Icon */}
           <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-            <Trash2 className="h-7 w-7 text-destructive" />
+            <IconTrash className="h-7 w-7 text-destructive" />
           </div>
 
           <h2 className="text-xl font-black text-center mb-1">Delete session?</h2>
@@ -68,7 +68,7 @@ function DeleteConfirmModal({
 
           {/* Warning */}
           <div className="flex items-start gap-2.5 rounded-xl bg-destructive/6 border border-destructive/20 px-3.5 py-3 mb-6">
-            <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+            <IconAlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
             <p className="text-xs text-destructive leading-relaxed">
               This will permanently delete the session along with all players, matches, and scores. This cannot be undone.
             </p>
@@ -82,7 +82,7 @@ function DeleteConfirmModal({
               disabled={isDeleting}
               id="cancel-delete-btn"
             >
-              <X className="h-4 w-4 mr-1.5" />
+              <IconX className="h-4 w-4 mr-1.5" />
               Cancel
             </Button>
             <Button
@@ -98,7 +98,7 @@ function DeleteConfirmModal({
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
-                  <Trash2 className="h-4 w-4" />
+                  <IconTrash className="h-4 w-4" />
                   Delete
                 </span>
               )}
@@ -160,7 +160,7 @@ function SessionCard({
               {SPORT_LABELS[session.sport]} · {FORMAT_LABELS[session.format]}
             </p>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <IconClock className="h-3 w-3" />
               {formatRelativeTime(session.created_at)}
             </p>
           </div>
@@ -174,7 +174,7 @@ function SessionCard({
             aria-label={`Delete session ${session.title}`}
             id={`delete-session-${session.id}-btn`}
           >
-            <Trash2 className="h-4 w-4" />
+            <IconTrash className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -202,7 +202,7 @@ function EmptyState() {
         className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3 text-sm font-semibold shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 hover:-translate-y-0.5 transition-all duration-150"
         id="create-first-session-btn"
       >
-        <Plus className="h-4 w-4" />
+        <IconPlus className="h-4 w-4" />
         Create your first session
       </Link>
     </motion.div>
@@ -308,7 +308,7 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
       {!isLoading && activeSessions.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Zap className="h-4 w-4 text-green-600" />
+            <IconBolt className="h-4 w-4 text-green-600" />
             <h2 className="text-sm font-bold text-green-700 uppercase tracking-wider">
               Live Now
             </h2>
@@ -331,7 +331,7 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
       {!isLoading && pastSessions.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <IconCalendar className="h-4 w-4 text-muted-foreground" />
             <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
               {activeSessions.length > 0 ? "Past Sessions" : "All Sessions"}
             </h2>
@@ -357,7 +357,7 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
         id="new-session-fab"
         aria-label="Create new session"
       >
-        <Plus className="h-5 w-5" />
+        <IconPlus className="h-5 w-5" />
         <span>New Session</span>
       </Link>
 

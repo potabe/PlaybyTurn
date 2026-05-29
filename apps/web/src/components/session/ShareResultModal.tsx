@@ -5,7 +5,7 @@ import { toPng } from "html-to-image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ExportTemplate } from "@/components/export/ExportTemplates";
-import { Download, Loader2, Image as ImageIcon, List } from "lucide-react";
+import { IconDownload, IconLoader2, IconPhoto as IconPhoto, IconList } from "@tabler/icons-react";
 import type { Session, Player } from "@/types/session";
 
 interface Props {
@@ -62,7 +62,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
                 variant === "podium" ? "bg-card text-foreground shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              <ImageIcon className="w-4 h-4" /> Podium Mode
+              <IconPhoto className="w-4 h-4" /> Podium Mode
             </button>
             <button
               onClick={() => setVariant("full")}
@@ -70,7 +70,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
                 variant === "full" ? "bg-card text-foreground shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              <List className="w-4 h-4" /> Full Table
+              <IconList className="w-4 h-4" /> Full Table
             </button>
           </div>
 
@@ -91,11 +91,11 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
           >
             {isExporting ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Rendering Image...
+                <IconLoader2 className="w-5 h-5 mr-2 animate-spin" /> Rendering Image...
               </>
             ) : (
               <>
-                <Download className="w-5 h-5 mr-2" /> Download Image
+                <IconDownload className="w-5 h-5 mr-2" /> IconDownload Image
               </>
             )}
           </Button>

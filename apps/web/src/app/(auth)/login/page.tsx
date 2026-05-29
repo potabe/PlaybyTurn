@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { IconMail, IconLock, IconEye, IconEyeOff, IconLoader2 } from "@tabler/icons-react";
 
 
 // GitHub Icon SVG
@@ -142,7 +142,7 @@ function LoginForm() {
         id="github-login-btn"
       >
         {isGitHubLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <IconLoader2 className="h-4 w-4 animate-spin" />
         ) : (
           <GitHubIcon />
         )}
@@ -164,7 +164,7 @@ function LoginForm() {
             Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconMail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="email"
               type="email"
@@ -193,7 +193,7 @@ function LoginForm() {
             </button>
           </div>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconLock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -211,9 +211,9 @@ function LoginForm() {
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <IconEyeOff className="h-4 w-4" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <IconEye className="h-4 w-4" />
               )}
             </button>
           </div>
@@ -226,7 +226,7 @@ function LoginForm() {
           id="email-login-btn"
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <IconLoader2 className="h-4 w-4 animate-spin" />
           ) : (
             "Sign in"
           )}

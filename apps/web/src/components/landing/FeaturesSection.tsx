@@ -2,18 +2,11 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import {
-  Shuffle,
-  Activity,
-  Share2,
-  Trophy,
-  Clock,
-  Smartphone,
-} from "lucide-react";
+import { IconArrowsShuffle, IconActivity, IconShare2, IconTrophy, IconClock, IconDeviceMobile } from "@tabler/icons-react";
 
 const FEATURES = [
   {
-    icon: Shuffle,
+    icon: IconArrowsShuffle,
     title: "Smart Matchmaking",
     description:
       "Automated fair rotation using smart algorithms. Singles, Doubles, Mixed Doubles, and Americano — all handled.",
@@ -22,7 +15,7 @@ const FEATURES = [
     border: "border-blue-100",
   },
   {
-    icon: Activity,
+    icon: IconActivity,
     title: "Live Score Tracking",
     description:
       "Giant tap-to-score interface built for sweaty hands and bright sunlight. Sport-specific rules built in.",
@@ -31,7 +24,7 @@ const FEATURES = [
     border: "border-green-100",
   },
   {
-    icon: Share2,
+    icon: IconShare2,
     title: "Instant Spectator View",
     description:
       "Share a 6-character code. Friends see live scores and standings in real-time — no account needed.",
@@ -40,7 +33,7 @@ const FEATURES = [
     border: "border-yellow-100",
   },
   {
-    icon: Trophy,
+    icon: IconTrophy,
     title: "Real-time Leaderboard",
     description:
       "Automatic standings update after every match. Win count, points, differential — all calculated for you.",
@@ -49,7 +42,7 @@ const FEATURES = [
     border: "border-purple-100",
   },
   {
-    icon: Clock,
+    icon: IconClock,
     title: "Undo Anytime",
     description:
       "Tapped too fast? One-tap undo restores the previous state instantly. No arguments, no confusion.",
@@ -58,7 +51,7 @@ const FEATURES = [
     border: "border-red-100",
   },
   {
-    icon: Smartphone,
+    icon: IconDeviceMobile,
     title: "Works as an App",
     description:
       "Add to your home screen for a native app feel. Screen stays awake during matches. No App Store needed.",

@@ -9,10 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Share2, Trophy, Activity, Clock, ChevronRight, Check,
-  FlagOff, Flag, AlertTriangle, X, Image as ImageIcon
-} from "lucide-react";
+import { IconShare2, IconTrophy, IconActivity, IconClock, IconChevronRight, IconCheck, IconFlagOff, IconFlag, IconAlertTriangle, IconX, IconPhoto as IconPhoto } from "@tabler/icons-react";
 import { ShareResultModal } from "./ShareResultModal";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
@@ -122,7 +119,7 @@ function MatchCard({
           </div>
         )}
         <div className="flex justify-end mt-2">
-          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          <IconChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
       </div>
     </Link>
@@ -146,7 +143,7 @@ function QueueSection({ players, matches }: { players: Player[]; matches: Match[
       {playing.length > 0 && (
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2 flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5" /> On Court
+            <IconActivity className="h-3.5 w-3.5" /> On Court
           </p>
           <div className="flex flex-wrap gap-2">
             {playing.map((p) => (
@@ -160,7 +157,7 @@ function QueueSection({ players, matches }: { players: Player[]; matches: Match[
       {resting.length > 0 && (
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" /> Resting
+            <IconClock className="h-3.5 w-3.5" /> Resting
           </p>
           <div className="flex flex-wrap gap-2">
             {resting
@@ -196,7 +193,7 @@ function ShareButton({ code }: { code: string }) {
       }`}
       id="share-session-btn"
     >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
+      {copied ? <IconCheck className="h-3.5 w-3.5" /> : <IconShare2 className="h-3.5 w-3.5" />}
       {copied ? "Copied!" : `Share · ${code}`}
     </button>
   );
@@ -243,8 +240,8 @@ function EndSessionModal({
             isForce ? "bg-amber-100" : "bg-emerald-100"
           }`}>
             {isForce
-              ? <FlagOff className="h-7 w-7 text-amber-600" />
-              : <Flag className="h-7 w-7 text-emerald-600" />
+              ? <IconFlagOff className="h-7 w-7 text-amber-600" />
+              : <IconFlag className="h-7 w-7 text-emerald-600" />
             }
           </div>
 
@@ -260,7 +257,7 @@ function EndSessionModal({
           {/* Warning for force mode */}
           {isForce && (
             <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-3 mb-6">
-              <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <IconAlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-amber-800 leading-relaxed">
                 Remaining pending and in-progress matches will be marked as <strong>Cancelled</strong>. Final standings will reflect only completed matches.
               </p>
@@ -270,7 +267,7 @@ function EndSessionModal({
           {/* Normal mode info */}
           {!isForce && (
             <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3.5 py-3 mb-6">
-              <Trophy className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <IconTrophy className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-emerald-800 leading-relaxed">
                 The session will be marked as <strong>Completed</strong>. Final standings will be locked and viewable from your dashboard.
               </p>
@@ -285,7 +282,7 @@ function EndSessionModal({
               disabled={isPending}
               id="cancel-end-session-btn"
             >
-              <X className="h-4 w-4 mr-1.5" />
+              <IconX className="h-4 w-4 mr-1.5" />
               Cancel
             </Button>
             <Button
@@ -305,12 +302,12 @@ function EndSessionModal({
                 </span>
               ) : isForce ? (
                 <span className="flex items-center gap-1.5">
-                  <FlagOff className="h-4 w-4" />
+                  <IconFlagOff className="h-4 w-4" />
                   Force End
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
-                  <Flag className="h-4 w-4" />
+                  <IconFlag className="h-4 w-4" />
                   End Session
                 </span>
               )}
@@ -343,7 +340,7 @@ function EndSessionBar({
           {allDone ? (
             <>
               <p className="text-sm font-bold text-emerald-800 flex items-center gap-1.5">
-                <Trophy className="h-4 w-4" /> All matches done!
+                <IconTrophy className="h-4 w-4" /> All matches done!
               </p>
               <p className="text-xs text-emerald-700 mt-0.5">
                 Ready to lock in final standings.
@@ -352,7 +349,7 @@ function EndSessionBar({
           ) : (
             <>
               <p className="text-sm font-bold text-amber-800 flex items-center gap-1.5">
-                <Clock className="h-4 w-4" /> {pendingCount} match{pendingCount > 1 ? "es" : ""} remaining
+                <IconClock className="h-4 w-4" /> {pendingCount} match{pendingCount > 1 ? "es" : ""} remaining
               </p>
               <p className="text-xs text-amber-700 mt-0.5">
                 You can force end the session early.
@@ -371,11 +368,11 @@ function EndSessionBar({
         >
           {allDone ? (
             <span className="flex items-center gap-1.5">
-              <Flag className="h-4 w-4" /> End Session
+              <IconFlag className="h-4 w-4" /> End Session
             </span>
           ) : (
             <span className="flex items-center gap-1.5">
-              <FlagOff className="h-4 w-4" /> Force End
+              <IconFlagOff className="h-4 w-4" /> Force End
             </span>
           )}
         </Button>
@@ -634,7 +631,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-sm font-bold text-blue-900 flex items-center gap-1.5">
-                <Trophy className="h-4 w-4 text-yellow-500" /> Session Completed!
+                <IconTrophy className="h-4 w-4 text-yellow-500" /> Session Completed!
               </p>
               <p className="text-xs text-blue-700/80 mt-0.5">
                 Share the final standings with players.
@@ -644,7 +641,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
               onClick={() => setShowShareModal(true)}
               className="flex-shrink-0 h-10 rounded-xl font-bold text-white text-sm bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-200"
             >
-              <ImageIcon className="h-4 w-4 mr-1.5" /> Export Image
+              <IconPhoto className="h-4 w-4 mr-1.5" /> Export Image
             </Button>
           </div>
         </div>
@@ -655,19 +652,19 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         <TabsList className="w-full rounded-xl h-10">
           {session?.is_knockout && (
             <TabsTrigger value="bracket" className="flex-1 rounded-lg text-xs font-semibold" id="tab-bracket">
-              <Trophy className="h-3.5 w-3.5 mr-1" /> Bracket
+              <IconTrophy className="h-3.5 w-3.5 mr-1" /> Bracket
             </TabsTrigger>
           )}
           <TabsTrigger value="matches" className="flex-1 rounded-lg text-xs font-semibold" id="tab-matches">
-            <Activity className="h-3.5 w-3.5 mr-1" /> Matches
+            <IconActivity className="h-3.5 w-3.5 mr-1" /> Matches
           </TabsTrigger>
           {!session?.is_knockout && (
             <TabsTrigger value="queue" className="flex-1 rounded-lg text-xs font-semibold" id="tab-queue">
-              <Clock className="h-3.5 w-3.5 mr-1" /> Queue
+              <IconClock className="h-3.5 w-3.5 mr-1" /> Queue
             </TabsTrigger>
           )}
           <TabsTrigger value="leaderboard" className="flex-1 rounded-lg text-xs font-semibold" id="tab-leaderboard">
-            <Trophy className="h-3.5 w-3.5 mr-1" /> Standings
+            <IconTrophy className="h-3.5 w-3.5 mr-1" /> Standings
           </TabsTrigger>
         </TabsList>
 

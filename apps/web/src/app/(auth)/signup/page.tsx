@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
+import { IconMail, IconLock, IconUser, IconEye, IconEyeOff, IconLoader2 } from "@tabler/icons-react";
 
 // GitHub Icon SVG
 function GitHubIcon() {
@@ -123,7 +123,7 @@ export default function SignupPage() {
         id="github-signup-btn"
       >
         {isGitHubLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <IconLoader2 className="h-4 w-4 animate-spin" />
         ) : (
           <GitHubIcon />
         )}
@@ -146,7 +146,7 @@ export default function SignupPage() {
             Full name
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconUser className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="name"
               type="text"
@@ -166,7 +166,7 @@ export default function SignupPage() {
             Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconMail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="email"
               type="email"
@@ -186,7 +186,7 @@ export default function SignupPage() {
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconLock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -204,7 +204,7 @@ export default function SignupPage() {
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
             </button>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -219,7 +219,7 @@ export default function SignupPage() {
           id="email-signup-btn"
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <IconLoader2 className="h-4 w-4 animate-spin" />
           ) : (
             "Create account"
           )}

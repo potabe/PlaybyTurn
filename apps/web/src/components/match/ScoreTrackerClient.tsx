@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { getScoringEngine } from "@/lib/scoring";
-import { ArrowLeft, Minus, CheckCircle2, AlertTriangle, Pencil } from "lucide-react";
+import { IconArrowLeft, IconMinus, IconCircleCheckFilled, IconAlertTriangle, IconPencil } from "@tabler/icons-react";
 
 
 import { Button } from "@/components/ui/button";
@@ -365,7 +365,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           onClick={() => router.push(`/sessions/${match.session_id}`)}
           className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-16"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <IconArrowLeft className="h-4 w-4" />
           Back
         </button>
         <div className="text-center flex-1">
@@ -381,7 +381,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground transition-colors"
               aria-label="Edit score manually"
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <IconPencil className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
@@ -438,7 +438,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   aria-label="Undo last point"
                   id="undo-btn-team2"
                 >
-                  <Minus className="h-6 w-6 text-foreground" />
+                  <IconMinus className="h-6 w-6 text-foreground" />
                 </motion.button>
               )}
             </AnimatePresence>
@@ -488,7 +488,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   aria-label="Undo last point"
                   id="undo-btn"
                 >
-                  <Minus className="h-6 w-6 text-foreground" />
+                  <IconMinus className="h-6 w-6 text-foreground" />
                 </motion.button>
               )}
             </AnimatePresence>
@@ -510,7 +510,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               onClick={() => router.push(`/sessions/${match.session_id}`)}
               id="back-to-session-btn"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <IconArrowLeft className="h-4 w-4 mr-2" />
               Back to Matches
             </Button>
             <Button
@@ -568,7 +568,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                     disabled={finishMatch.isPending}
                     id="confirm-finish-btn"
                   >
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    <IconCircleCheckFilled className="h-4 w-4 mr-2" />
                     {finishMatch.isPending ? "Saving…" : "Save Result & Continue"}
                   </Button>
                 </>

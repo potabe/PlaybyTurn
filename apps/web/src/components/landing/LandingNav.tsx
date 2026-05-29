@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
+import { IconMoon, IconSun } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 export function LandingNav() {
@@ -38,7 +38,7 @@ export function LandingNav() {
             className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted"
             aria-label="Toggle theme"
           >
-            {mounted ? (theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />) : <div className="h-4 w-4" />}
+            {mounted ? (theme === "dark" ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />) : <div className="h-4 w-4" />}
           </button>
 
           <Link
