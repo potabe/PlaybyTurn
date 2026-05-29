@@ -427,7 +427,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           </AnimatePresence>
           <div className="flex items-center gap-3">
             <AnimatePresence>
-              {history.length > 0 && !isComplete && (
+              {!isComplete && (
                 <motion.button
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -438,7 +438,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   aria-label="Undo last point"
                   id="undo-btn-team2"
                 >
-                  <IconMinus className="h-6 w-6 text-foreground" />
+                  <IconMinus className={"h-6 w-6 text-foreground " + (history.length === 0 ? "opacity-30" : "opacity-100")} />
                 </motion.button>
               )}
             </AnimatePresence>
@@ -477,7 +477,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           <div className="flex items-center gap-3">
             <div className="score-display text-foreground">{display.team1}</div>
             <AnimatePresence>
-              {history.length > 0 && !isComplete && (
+              {!isComplete && (
                 <motion.button
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -488,7 +488,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   aria-label="Undo last point"
                   id="undo-btn"
                 >
-                  <IconMinus className="h-6 w-6 text-foreground" />
+                  <IconMinus className={"h-6 w-6 text-foreground " + (history.length === 0 ? "opacity-30" : "opacity-100")} />
                 </motion.button>
               )}
             </AnimatePresence>
