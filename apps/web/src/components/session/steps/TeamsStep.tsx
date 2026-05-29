@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,31 +13,29 @@ interface Props {
 }
 
 export function TeamsStep({ form, setForm, onNext }: Props) {
-  const [selectedMaleId, setSelectedMaleId] = useState<string | null>(null);
+  const [selectedPlayer1Id, setSelectedPlayer1Id] = useState<string | null>(null);
 
-  const males = form.players.filter((p) => p.gender === "MALE" && p.name.trim());
-  const females = form.players.filter((p) => p.gender === "FEMALE" && p.name.trim());
+  const players = form.players.filter((p) => p.name.trim());
   const teams = form.teamAssignments;
 
   const assignedIds = new Set(teams.flatMap((t) => [t.player1_id, t.player2_id]));
-  const freeMales = males.filter((p) => !assignedIds.has(p.id));
-  const freeFemales = females.filter((p) => !assignedIds.has(p.id));
+  const freePlayers = players.filter((p) => !assignedIds.has(p.id));
 
-  // ── Pair a male with a female ──────────────────────────────
-  function handleMaleClick(id: string) {
-    setSelectedMaleId((prev) => (prev === id ? null : id));
-  }
-
-  function handleFemaleClick(femaleId: string) {
-    if (!selectedMaleId) return;
-    setForm((f) => ({
-      ...f,
-      teamAssignments: [
-        ...f.teamAssignments,
-        { player1_id: selectedMaleId, player2_id: femaleId },
-      ],
-    }));
-    setSelectedMaleId(null);
+  function handlePlayerClick(id: string) {
+    if (!selectedPlayer1Id) {
+      setSelectedPlayer1Id(id);
+    } else if (selectedPlayer1Id === id) {
+      setSelectedPlayer1Id(null);
+    } else {
+      setForm((f) => ({
+        ...f,
+        teamAssignments: [
+          ...f.teamAssignments,
+          { player1_id: selectedPlayer1Id, player2_id: id },
+        ],
+      }));
+      setSelectedPlayer1Id(null);
+    }
   }
 
   function updateTeamName(idx: number, newName: string) {
@@ -49,27 +47,26 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
   }
 
   function removeTeam(idx: number) {
-    setSelectedMaleId(null);
+    setSelectedPlayer1Id(null);
     setForm((f) => ({
       ...f,
       teamAssignments: f.teamAssignments.filter((_, i) => i !== idx),
     }));
   }
 
-  // ── Auto-randomize 1M + 1F pairs ─────────────────────────
   function randomize() {
-    const shuffledMales = [...males].sort(() => Math.random() - 0.5);
-    const shuffledFemales = [...females].sort(() => Math.random() - 0.5);
-    const count = Math.min(shuffledMales.length, shuffledFemales.length);
-    const newTeams: TeamAssignmentInput[] = Array.from({ length: count }, (_, i) => ({
-      player1_id: shuffledMales[i].id,
-      player2_id: shuffledFemales[i].id,
-    }));
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    const newTeams: TeamAssignmentInput[] = [];
+    for (let i = 0; i < Math.floor(shuffled.length / 2); i++) {
+      newTeams.push({
+        player1_id: shuffled[i * 2].id,
+        player2_id: shuffled[i * 2 + 1].id,
+      });
+    }
     setForm((f) => ({ ...f, teamAssignments: newTeams }));
-    setSelectedMaleId(null);
+    setSelectedPlayer1Id(null);
   }
 
-  const hasMismatch = males.length !== females.length;
   const canProceed = teams.length >= 2;
 
   return (
@@ -78,7 +75,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
       <div>
         <h2 className="text-2xl font-black">Assign Teams</h2>
         <p className="text-muted-foreground text-sm mt-1">
-          Pair 1 male + 1 female per team. Teams play round-robin against each other.
+          Pair up your players. Teams play round-robin against each other.
         </p>
       </div>
 
@@ -92,7 +89,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
         Randomize All Teams
       </button>
 
-      {/* ── Assigned teams ── */}
+      {/* Assigned teams */}
       <AnimatePresence mode="popLayout">
         {teams.length > 0 && (
           <motion.div
@@ -104,8 +101,8 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
               Teams ({teams.length})
             </p>
             {teams.map((team, idx) => {
-              const male = males.find((p) => p.id === team.player1_id);
-              const female = females.find((p) => p.id === team.player2_id);
+              const p1 = players.find((p) => p.id === team.player1_id);
+              const p2 = players.find((p) => p.id === team.player2_id);
               return (
                 <motion.div
                   key={`${team.player1_id}-${team.player2_id}`}
@@ -120,12 +117,12 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
                       T{idx + 1}
                     </span>
                     <div className="flex-1 flex items-center gap-2 min-w-0">
-                      <span className="text-sm font-semibold bg-blue-50 text-blue-700 rounded-lg px-2.5 py-1 truncate">
-                        💙 {male?.name}
+                      <span className={`text-sm font-semibold rounded-lg px-2.5 py-1 truncate ${p1?.gender === 'MALE' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400'}`}>
+                        {p1?.gender === 'MALE' ? '♂️' : '♀️'} {p1?.name}
                       </span>
                       <span className="text-xs font-black text-muted-foreground flex-shrink-0">+</span>
-                      <span className="text-sm font-semibold bg-pink-50 text-pink-700 rounded-lg px-2.5 py-1 truncate">
-                        🩷 {female?.name}
+                      <span className={`text-sm font-semibold rounded-lg px-2.5 py-1 truncate ${p2?.gender === 'MALE' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400'}`}>
+                        {p2?.gender === 'MALE' ? '♂️' : '♀️'} {p2?.name}
                       </span>
                     </div>
                     <button
@@ -153,83 +150,61 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ── Unassigned players picker ── */}
-      {(freeMales.length > 0 || freeFemales.length > 0) && (
+      {/* Unassigned players picker */}
+      {freePlayers.length > 0 && (
         <div className="space-y-3">
           {/* Instruction banner */}
           <div className={`rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-colors ${
-            selectedMaleId
-              ? "bg-pink-500 text-white"
-              : "bg-blue-50 text-blue-700 border border-blue-100"
+            selectedPlayer1Id
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-foreground border border-border"
           }`}>
-            {selectedMaleId
-              ? "✅ Male selected — now tap a female to pair"
-              : "👆 Tap a male to start pairing"}
+            {selectedPlayer1Id
+              ? "✨ First player selected — now tap a second player to pair"
+              : "👇 Tap a player to start pairing"}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Males column */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-blue-600">
-                💙 Males ({freeMales.length})
-              </p>
-              {freeMales.map((p) => (
+            {freePlayers.map((p) => {
+              const isSelected = selectedPlayer1Id === p.id;
+              const isMale = p.gender === 'MALE';
+              const baseColors = isMale 
+                ? "bg-blue-50 text-blue-800 border-blue-100 hover:border-blue-300 hover:bg-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                : "bg-pink-50 text-pink-800 border-pink-100 hover:border-pink-300 hover:bg-pink-100 dark:bg-pink-900/20 dark:border-pink-800 dark:text-pink-300 dark:hover:bg-pink-900/40";
+              const selectedColors = "bg-primary text-primary-foreground shadow-md scale-[1.02] border-transparent";
+
+              return (
                 <motion.button
                   key={p.id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => handleMaleClick(p.id)}
-                  className={`w-full text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
-                    selectedMaleId === p.id
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-200 scale-[1.02]"
-                      : "bg-blue-50 text-blue-800 border border-blue-100 hover:border-blue-300 hover:bg-blue-100"
+                  onClick={() => handlePlayerClick(p.id)}
+                  className={`text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 border ${
+                    isSelected ? selectedColors : baseColors
                   }`}
-                  id={`select-male-${p.id}`}
+                  id={`select-player-${p.id}`}
                 >
+                  <span className="mr-1">{isMale ? '♂️' : '♀️'}</span>
                   {p.name}
                 </motion.button>
-              ))}
-            </div>
-
-            {/* Females column */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-pink-600">
-                🩷 Females ({freeFemales.length})
-              </p>
-              {freeFemales.map((p) => (
-                <motion.button
-                  key={p.id}
-                  whileTap={selectedMaleId ? { scale: 0.95 } : {}}
-                  onClick={() => handleFemaleClick(p.id)}
-                  disabled={!selectedMaleId}
-                  className={`w-full text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
-                    selectedMaleId
-                      ? "bg-pink-500 text-white shadow-md shadow-pink-200 hover:bg-pink-600 cursor-pointer"
-                      : "bg-pink-50 text-pink-800 border border-pink-100 opacity-40 cursor-not-allowed"
-                  }`}
-                  id={`select-female-${p.id}`}
-                >
-                  {p.name}
-                </motion.button>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* All paired + no unassigned */}
-      {freeMales.length === 0 && freeFemales.length === 0 && teams.length > 0 && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-semibold flex items-center gap-2">
-          ✅ All players have been paired into teams!
+      {freePlayers.length === 0 && teams.length > 0 && (
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 font-semibold flex items-center gap-2 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400">
+          ✨ All players have been paired into teams!
         </div>
       )}
 
-      {/* Gender mismatch warning */}
-      {hasMismatch && (
-        <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-3">
-          <IconAlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-800">
-            You have {males.length} male(s) and {females.length} female(s).{" "}
-            {Math.abs(males.length - females.length)} player(s) won&apos;t be assigned to a team.
+      {/* Odd players warning */}
+      {players.length % 2 !== 0 && (
+        <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-3 dark:bg-amber-900/20 dark:border-amber-800">
+          <IconAlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 dark:text-amber-400">
+            You have an odd number of players ({players.length}). 1 player won't be assigned to a team.
           </p>
         </div>
       )}
