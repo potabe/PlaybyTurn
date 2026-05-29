@@ -3,29 +3,31 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
+import { IconUser, IconUsers, IconHeartHandshake, IconRefresh } from "@tabler/icons-react";
+
 const FORMATS = [
   {
     name: "Singles",
-    desc: "1v1 — individual rotation",
-    icon: "👤",
+    desc: "1v1 � individual rotation",
+    icon: <IconUser className="w-10 h-10 mx-auto text-indigo-500" />,
     players: "2+",
   },
   {
     name: "Fixed Doubles",
     desc: "Static team pairs",
-    icon: "👥",
+    icon: <IconUsers className="w-10 h-10 mx-auto text-blue-500" />,
     players: "4+",
   },
   {
     name: "Mixed Doubles",
     desc: "1 Male + 1 Female per team",
-    icon: "⚤",
+    icon: <IconHeartHandshake className="w-10 h-10 mx-auto text-pink-500" />,
     players: "4+",
   },
   {
     name: "Americano",
     desc: "Everyone vs everyone",
-    icon: "🔄",
+    icon: <IconRefresh className="w-10 h-10 mx-auto text-sky-500" />,
     players: "4+",
   },
 ];
@@ -118,3 +120,4 @@ export function HowItWorksSection() {
     </section>
   );
 }
+

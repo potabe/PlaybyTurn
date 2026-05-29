@@ -1,14 +1,15 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import type { SetupForm } from "@/components/session/SessionSetupWizard";
 import type { SportType } from "@/types/session";
+import { PadelIcon, TennisIcon, BadmintonIcon, TableTennisIcon } from "@/components/common/SportIcons";
 
-const SPORTS: { type: SportType; label: string; emoji: string; desc: string }[] = [
-  { type: "PADEL", label: "Padel", emoji: "🎾", desc: "Best of 3 sets, super tiebreak" },
-  { type: "BADMINTON", label: "Badminton", emoji: "🏸", desc: "Rally point, 21 pts, best of 3" },
-  { type: "TENNIS", label: "Tennis", emoji: "🎾", desc: "15-30-40, deuce, best of 3 sets" },
-  { type: "TABLE_TENNIS", label: "Table Tennis", emoji: "🏓", desc: "11 pts, best of 5 games" },
+const SPORTS: { type: SportType; label: string; icon: React.ReactNode; desc: string }[] = [
+  { type: "PADEL", label: "Padel", icon: <PadelIcon className="w-8 h-8" />, desc: "Best of 3 sets, super tiebreak" },
+  { type: "BADMINTON", label: "Badminton", icon: <BadmintonIcon className="w-8 h-8" />, desc: "Rally point, 21 pts, best of 3" },
+  { type: "TENNIS", label: "Tennis", icon: <TennisIcon className="w-8 h-8" />, desc: "15-30-40, deuce, best of 3 sets" },
+  { type: "TABLE_TENNIS", label: "Table Tennis", icon: <TableTennisIcon className="w-8 h-8" />, desc: "11 pts, best of 5 games" },
 ];
 
 interface Props {
@@ -48,21 +49,16 @@ export function SportStep({ form, setForm, onNext }: Props) {
               }`}
             >
               {isSelected && (
-                <motion.div
-                  layoutId="sport-check"
-                  className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                >
-                  <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </motion.div>
+                <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-primary" />
               )}
-              <span className="text-4xl">{sport.emoji}</span>
+              <div className="mb-2 drop-shadow-md">
+                {sport.icon}
+              </div>
               <div>
-                <p className="font-bold text-sm">{sport.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{sport.desc}</p>
+                <h3 className="font-black text-base">{sport.label}</h3>
+                <p className="text-[11px] font-medium text-muted-foreground leading-tight mt-0.5">
+                  {sport.desc}
+                </p>
               </div>
             </motion.button>
           );

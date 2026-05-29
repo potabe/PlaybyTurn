@@ -3,12 +3,13 @@
 import { motion, type Variants, type Easing } from "framer-motion";
 import Link from "next/link";
 import { IconArrowRight, IconBolt } from "@tabler/icons-react";
+import { PadelIcon, BadmintonIcon, TennisIcon, TableTennisIcon } from "@/components/common/SportIcons";
 
 const SPORT_ITEMS = [
-  { emoji: "🎾", label: "Padel", color: "bg-blue-100 text-blue-600" },
-  { emoji: "🏸", label: "Badminton", color: "bg-green-100 text-green-600" },
-  { emoji: "🎾", label: "Tennis", color: "bg-yellow-100 text-yellow-700" },
-  { emoji: "🏓", label: "Table Tennis", color: "bg-pink-100 text-pink-600" },
+  { icon: <PadelIcon className="w-4 h-4" />, label: "Padel", color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
+  { icon: <BadmintonIcon className="w-4 h-4" />, label: "Badminton", color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" },
+  { icon: <TennisIcon className="w-4 h-4" />, label: "Tennis", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
+  { icon: <TableTennisIcon className="w-4 h-4" />, label: "Table Tennis", color: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" },
 ];
 
 const easeOut: Easing = [0.0, 0.0, 0.2, 1.0];
@@ -114,7 +115,7 @@ export function HeroSection() {
               key={sport.label}
               className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium ${sport.color}`}
             >
-              <span>{sport.emoji}</span>
+              <span>{sport.icon}</span>
               {sport.label}
             </span>
           ))}
@@ -123,3 +124,4 @@ export function HeroSection() {
     </section>
   );
 }
+

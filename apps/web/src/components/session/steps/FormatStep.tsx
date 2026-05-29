@@ -1,15 +1,17 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import type { SetupForm } from "@/components/session/SessionSetupWizard";
 import { FORMAT_DESCRIPTIONS, FORMAT_LABELS, FORMAT_MIN_PLAYERS } from "@/lib/utils/format";
 import type { FormatType } from "@/types/session";
+import { IconUser, IconUsers, IconHeartHandshake, IconRefresh, IconTrophy } from "@tabler/icons-react";
+import React from "react";
 
-const FORMATS: { type: FormatType; icon: string }[] = [
-  { type: "SINGLES", icon: "👤" },
-  { type: "FIXED_DOUBLES", icon: "👥" },
-  { type: "MIXED_DOUBLES", icon: "⚤" },
-  { type: "AMERICANO", icon: "🔄" },
+const FORMATS: { type: FormatType; icon: React.ReactNode }[] = [
+  { type: "SINGLES", icon: <IconUser className="w-6 h-6 text-indigo-500" /> },
+  { type: "FIXED_DOUBLES", icon: <IconUsers className="w-6 h-6 text-blue-500" /> },
+  { type: "MIXED_DOUBLES", icon: <IconHeartHandshake className="w-6 h-6 text-pink-500" /> },
+  { type: "AMERICANO", icon: <IconRefresh className="w-6 h-6 text-sky-500" /> },
 ];
 
 interface Props {
@@ -50,8 +52,8 @@ export function FormatStep({ form, setForm, onNext }: Props) {
               >
                 {/* Icon */}
                 <div
-                  className={`flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-colors ${
-                    isSelected ? "bg-primary/15" : "bg-muted"
+                  className={`flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
+                    isSelected ? "bg-card shadow-sm" : "bg-muted/50"
                   }`}
                 >
                   {fmt.icon}
@@ -90,13 +92,13 @@ export function FormatStep({ form, setForm, onNext }: Props) {
         {/* Tournament Mode Toggle */}
         <div 
           className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-colors ${
-            form.is_knockout ? "border-primary bg-primary/5" : "border-border bg-card"
+            form.is_knockout ? "border-primary bg-primary/5 shadow-md shadow-primary/15" : "border-border bg-card hover:border-primary/40 hover:bg-primary/3"
           }`}
           onClick={() => setForm((f) => ({ ...f, is_knockout: !f.is_knockout }))}
         >
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${form.is_knockout ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
-              🏆
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${form.is_knockout ? "bg-card shadow-sm" : "bg-muted/50"}`}>
+              <IconTrophy className={`w-6 h-6 ${form.is_knockout ? "text-amber-500" : "text-muted-foreground"}`} />
             </div>
             <div>
               <p className="font-bold text-sm text-foreground">Tournament Mode</p>
