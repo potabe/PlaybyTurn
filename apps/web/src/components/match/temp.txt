@@ -1,0 +1,39 @@
+﻿  const handleSubtractPoint = useCallback((teamId: "team1" | "team2") => {
+    const t = teamId === "team1" ? "t1" : "t2";
+    const newScore = JSON.parse(JSON.stringify(scoreState));
+    let canSubtract = false;
+
+    if (newScore.sport === "BADMINTON") {
+      const set = newScore.sets[newScore.currentSet];
+      if (set && set[t] > 0) { set[t]--; canSubtract = true; }
+    } else if (newScore.sport === "TABLE_TENNIS") {
+      const game = newScore.games[newScore.currentGame];
+      if (game && game[t] > 0) { game[t]--; canSubtract = true; }
+    } else if (newScore.sport === "TENNIS" || newScore.sport === "PADEL") {
+      if (newScore.superTiebreak) {
+        if (newScore.superTiebreak[t] > 0) { newScore.superTiebreak[t]--; canSubtract = true; }
+      } else if (newScore.sets[newScore.currentSet]?.tiebreakScore) {
+        if (newScore.sets[newScore.currentSet].tiebreakScore[t] > 0) { newScore.sets[newScore.currentSet].tiebreakScore[t]--; canSubtract = true; }
+      } else if (newScore.points[t] > 0) {
+        newScore.points[t]--; canSubtract = true;
+      }
+    }
+
+    if (canSubtract) {
+      setHistory((h) => [...h, scoreState]);
+      setScoreState(newScore);
+      updateScore.mutate(newScore);
+    } else if (history.length > 0) {
+      // If we can't do a simple subtraction (e.g. score is 0 but we want to undo a game win)
+      // We fallback to undoPoint IF history is available
+      const { state, history: newHistory } = engine.undoPoint(scoreState, history);
+      setScoreState(state);
+      setHistory(newHistory);
+      updateScore.mutate(state);
+    } else {
+      // If history is empty and score is 0, we can't go back automatically
+      setShowEditModal(true);
+    }
+  }, [scoreState, history, engine, updateScore]);
+
+  const undoPoint = useCallback(() => {

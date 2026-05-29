@@ -522,7 +522,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.5 }}
                   transition={{ type: "spring", damping: 18, stiffness: 380 }}
-                  onClick={(e) => { e.stopPropagation(); handleSubtractPoint("team1"); }}
+                  onClick={(e) => { e.stopPropagation(); handleSubtractPoint("team2"); }}
                   className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full glass-panel active:scale-90 transition-transform shadow-md z-10"
                   aria-label="Undo last point"
                   id="undo-btn"
@@ -856,5 +856,4 @@ function EditScoreModal({
     </motion.div>
   );
 }
-
 
