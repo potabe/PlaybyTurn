@@ -358,9 +358,9 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
 
   // ─── Render ───────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden">
       {/* ── Nav bar ── */}
-      <div className="flex items-center justify-between px-4 pt-safe h-14 bg-white border-b border-border flex-shrink-0 z-10">
+      <div className="flex items-center justify-between px-4 pt-safe h-14 bg-background border-b border-border flex-shrink-0 z-10">
         <button
           onClick={() => router.push(`/sessions/${match.session_id}`)}
           className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-16"
@@ -408,7 +408,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
         <motion.button
           id="score-team1-btn"
           className={`relative flex-1 flex flex-col items-center justify-center select-none cursor-pointer transition-colors ${
-            tapFeedback === "team1" ? "bg-primary/8" : "bg-white hover:bg-primary/4 active:bg-primary/10"
+            tapFeedback === "team1" ? "bg-primary/8" : "bg-background hover:bg-primary/4 active:bg-primary/10"
           }`}
           onClick={() => addPoint("team1")}
           disabled={isComplete}
@@ -458,7 +458,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
         <motion.button
           id="score-team2-btn"
           className={`relative flex-1 flex flex-col items-center justify-center select-none cursor-pointer transition-colors ${
-            tapFeedback === "team2" ? "bg-primary/8" : "bg-white hover:bg-primary/4 active:bg-primary/10"
+            tapFeedback === "team2" ? "bg-primary/8" : "bg-background hover:bg-primary/4 active:bg-primary/10"
           }`}
           onClick={() => addPoint("team2")}
           disabled={isComplete}
@@ -503,7 +503,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       </div>
 
       {/* ── Bottom Action Button ── */}
-      <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-white">
+      <div className="px-4 pb-safe py-3 border-t border-border flex-shrink-0 bg-background">
         {match.status === "COMPLETED" ? (
           <div className="flex gap-3">
             <Button
@@ -551,7 +551,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="w-full bg-white rounded-t-3xl px-6 pt-6 pb-8"
+              className="w-full bg-background rounded-t-3xl px-6 pt-6 pb-8"
             >
               <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
 
@@ -622,7 +622,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="w-full bg-white rounded-t-3xl px-6 pt-6 pb-8"
+              className="w-full bg-background rounded-t-3xl px-6 pt-6 pb-8"
             >
               <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
               <div className="text-center mb-6">
@@ -694,7 +694,7 @@ function EditScoreModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 400 }}
-        className="bg-white rounded-3xl w-full max-w-sm overflow-hidden flex flex-col max-h-[85vh] shadow-2xl"
+        className="bg-background rounded-3xl w-full max-w-sm overflow-hidden flex flex-col max-h-[85vh] shadow-2xl"
       >
         <div className="p-5 border-b border-border flex items-center justify-between bg-muted/10">
           <h3 className="font-black text-lg">Edit Score</h3>
@@ -812,7 +812,7 @@ function EditScoreModal({
         </div>
         
         <div className="p-5 border-t border-border flex gap-3 bg-muted/10">
-           <Button variant="outline" className="flex-1 h-12 rounded-xl font-bold bg-white" onClick={onCancel}>Cancel</Button>
+           <Button variant="outline" className="flex-1 h-12 rounded-xl font-bold bg-background" onClick={onCancel}>Cancel</Button>
            <Button className="flex-1 h-12 rounded-xl font-black bg-primary text-primary-foreground shadow-md hover:shadow-lg transition-all" onClick={() => onSave(draft)}>Save Changes</Button>
         </div>
       </motion.div>

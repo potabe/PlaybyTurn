@@ -44,8 +44,8 @@ export function HowItWorksSection() {
   return (
     <section
       ref={ref}
-      className="px-6 py-24"
-      style={{ background: "oklch(0.97 0.01 250)" }}
+      className="px-6 py-24 bg-slate-50 dark:bg-slate-900/20"
+      
     >
       <div className="max-w-6xl mx-auto">
         {/* How it works */}
@@ -103,7 +103,7 @@ export function HowItWorksSection() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={isInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.4, delay: 0.35 + i * 0.08 }}
-              className="bg-white rounded-2xl border border-border p-6 text-center hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+              className="bg-card rounded-2xl border border-border p-6 text-center hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               <div className="text-4xl mb-3">{fmt.icon}</div>
               <h3 className="font-bold mb-1">{fmt.name}</h3>

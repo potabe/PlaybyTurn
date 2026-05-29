@@ -74,7 +74,7 @@ export function ReviewStep({ form, onBack, onSubmit, isSubmitting, error }: Prop
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-border bg-white overflow-hidden mb-6"
+        className="rounded-2xl border border-border bg-card overflow-hidden mb-6"
       >
         {SUMMARY_ROWS.map((row, i) => (
           <div

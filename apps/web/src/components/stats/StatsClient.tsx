@@ -97,12 +97,12 @@ function aggregatePlayers(
 function WinRateBadge({ rate }: { rate: number }) {
   const color =
     rate >= 70
-      ? "bg-emerald-100 text-emerald-700"
+      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
       : rate >= 50
-      ? "bg-blue-100 text-blue-700"
+      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
       : rate >= 30
-      ? "bg-amber-100 text-amber-700"
-      : "bg-rose-100 text-rose-700";
+      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+      : "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
   return (
     <span className={`text-xs font-bold rounded-full px-2.5 py-0.5 ${color}`}>
       {rate}%
@@ -155,7 +155,7 @@ function PlayerDetailModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col"
+        className="w-full sm:max-w-md bg-card rounded-t-3xl sm:rounded-2xl overflow-hidden max-h-[90vh] flex flex-col"
       >
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
@@ -191,16 +191,16 @@ function PlayerDetailModal({
         <div className="px-6 py-4 grid grid-cols-3 gap-2 flex-shrink-0">
           <StatPill icon="🏆" label="Sessions" value={player.sessionsCount} color="bg-primary/5" />
           <StatPill icon="🎯" label="Matches" value={player.matchesPlayed} />
-          <StatPill icon="✅" label="Wins" value={player.matchesWon} color="bg-emerald-50" />
+          <StatPill icon="✅" label="Wins" value={player.matchesWon} color="bg-emerald-50 dark:bg-emerald-900/20" />
           <StatPill icon="📈" label="Win Rate" value={`${player.winRate}%`} color={
-            player.winRate >= 50 ? "bg-emerald-50" : "bg-rose-50"
+            player.winRate >= 50 ? "bg-emerald-50 dark:bg-emerald-900/20" : "bg-rose-50 dark:bg-rose-900/20"
           } />
           <StatPill icon="⚡" label="Points" value={player.pointsWon} />
           <StatPill icon="±" label="Diff" value={
             player.pointDifferential >= 0
               ? `+${player.pointDifferential}`
               : player.pointDifferential
-          } color={player.pointDifferential >= 0 ? "bg-emerald-50" : "bg-rose-50"} />
+          } color={player.pointDifferential >= 0 ? "bg-emerald-50 dark:bg-emerald-900/20" : "bg-rose-50 dark:bg-rose-900/20"} />
         </div>
 
         {/* Win rate bar */}
@@ -343,13 +343,13 @@ export function StatsClient({ sessions, players }: Props) {
               <Users className="h-3 w-3" /> Players
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-gradient-to-br from-emerald-50 to-emerald-100/50 px-4 py-3 text-center">
+          <div className="rounded-2xl border border-border bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-800/10 px-4 py-3 text-center">
             <p className="text-2xl font-black">{totalMatches}</p>
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mt-0.5">
               <Activity className="h-3 w-3" /> Matches
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-gradient-to-br from-amber-50 to-amber-100/50 px-4 py-3 text-center">
+          <div className="rounded-2xl border border-border bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 px-4 py-3 text-center">
             <p className="text-2xl font-black">{avgWinRate}%</p>
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mt-0.5">
               <TrendingUp className="h-3 w-3" /> Avg Win Rate

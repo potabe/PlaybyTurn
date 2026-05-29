@@ -56,7 +56,7 @@ export function OfflineBanner() {
             </>
           ) : (
             <>
-              <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-background animate-pulse" />
               Back online!
             </>
           )}

@@ -54,7 +54,7 @@ function GenderToggle({
               ? g === "MALE"
                 ? "bg-blue-500 text-white"
                 : "bg-pink-500 text-white"
-              : "bg-white text-muted-foreground hover:bg-muted"
+              : "bg-card text-muted-foreground hover:bg-muted"
           }`}
           aria-label={g === "MALE" ? "Male" : "Female"}
           title={g === "MALE" ? "Male" : "Female"}

@@ -1,8 +1,20 @@
+"use client";
+
 import Link from "next/link";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function LandingNav() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -19,8 +31,16 @@ export function LandingNav() {
           </a>
         </nav>
 
-        {/* Auth CTAs */}
+        {/* Auth CTAs & Theme Toggle */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted"
+            aria-label="Toggle theme"
+          >
+            {mounted ? (theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />) : <div className="h-4 w-4" />}
+          </button>
+
           <Link
             href="/login"
             className="hidden sm:inline-flex text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"

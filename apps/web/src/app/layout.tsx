@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { QueryProvider } from "@/context/QueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineBanner } from "@/components/common/OfflineBanner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -85,12 +86,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${inter.variable} font-sans`}>
         <QueryProvider>
-          <AuthProvider>
-            <TooltipProvider>
-              <OfflineBanner />
-              {children}
-            </TooltipProvider>
-          </AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+            <AuthProvider>
+              <TooltipProvider>
+                <OfflineBanner />
+                {children}
+              </TooltipProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </QueryProvider>
       </body>
     </html>

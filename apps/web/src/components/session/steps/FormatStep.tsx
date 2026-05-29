@@ -45,7 +45,7 @@ export function FormatStep({ form, setForm, onNext }: Props) {
                 className={`flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.99] ${
                   isSelected
                     ? "border-primary bg-primary/6 shadow-md shadow-primary/15"
-                    : "border-border bg-white hover:border-primary/40 hover:bg-primary/3"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-primary/3"
                 }`}
               >
                 {/* Icon */}
@@ -90,7 +90,7 @@ export function FormatStep({ form, setForm, onNext }: Props) {
         {/* Tournament Mode Toggle */}
         <div 
           className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-colors ${
-            form.is_knockout ? "border-primary bg-primary/5" : "border-border bg-white"
+            form.is_knockout ? "border-primary bg-primary/5" : "border-border bg-card"
           }`}
           onClick={() => setForm((f) => ({ ...f, is_knockout: !f.is_knockout }))}
         >
@@ -104,7 +104,7 @@ export function FormatStep({ form, setForm, onNext }: Props) {
             </div>
           </div>
           <div className={`w-12 h-6 rounded-full p-1 transition-colors ${form.is_knockout ? "bg-primary" : "bg-muted-foreground/30"}`}>
-            <div className={`w-4 h-4 rounded-full bg-white transition-transform ${form.is_knockout ? "translate-x-6" : "translate-x-0"}`} />
+            <div className={`w-4 h-4 rounded-full bg-card transition-transform ${form.is_knockout ? "translate-x-6" : "translate-x-0"}`} />
           </div>
         </div>
       </div>

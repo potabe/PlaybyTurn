@@ -247,7 +247,7 @@ export function SessionSetupWizard() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* ── Sticky header ── */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border">
         <div className="max-w-lg mx-auto px-4">
           <div className="h-14 flex items-center justify-between">
             <button

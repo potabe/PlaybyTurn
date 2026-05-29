@@ -59,7 +59,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
             <button
               onClick={() => setVariant("podium")}
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${
-                variant === "podium" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                variant === "podium" ? "bg-card text-foreground shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
             >
               <ImageIcon className="w-4 h-4" /> Podium Mode
@@ -67,7 +67,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
             <button
               onClick={() => setVariant("full")}
               className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${
-                variant === "full" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                variant === "full" ? "bg-card text-foreground shadow-sm" : "text-slate-500 hover:text-slate-700"
               }`}
             >
               <List className="w-4 h-4" /> Full Table

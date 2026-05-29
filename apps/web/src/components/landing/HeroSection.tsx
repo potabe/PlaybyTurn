@@ -101,7 +101,7 @@ export function HeroSection() {
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white px-8 py-4 text-base font-semibold hover:bg-muted hover:-translate-y-0.5 transition-all duration-200"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-background px-8 py-4 text-base font-semibold hover:bg-muted hover:-translate-y-0.5 transition-all duration-200"
           >
             Sign In
           </Link>

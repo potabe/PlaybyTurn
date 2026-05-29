@@ -37,7 +37,7 @@ function LiveMatchCard({
   const hasScore = Object.keys(scoreData).length > 0;
 
   return (
-    <div className="flex-shrink-0 w-72 rounded-2xl border-2 border-border bg-white p-5 shadow-sm">
+    <div className="flex-shrink-0 w-72 rounded-2xl border-2 border-border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-semibold text-muted-foreground">{court?.name ?? "Court"}</span>
         <span className={`flex items-center gap-1 text-xs font-bold rounded-full px-2 py-0.5 ${
@@ -84,7 +84,7 @@ function StandingsTable({ players }: { players: Player[] }) {
   });
 
   return (
-    <div className="rounded-2xl border border-border bg-white overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
       {sorted.length === 0 && (
         <div className="text-center py-8 text-sm text-muted-foreground">No matches yet</div>
       )}
@@ -244,7 +244,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   return (
     <div className="min-h-screen bg-background">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-20 bg-card/90 backdrop-blur-md border-b border-border">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <span className="text-xl font-black gradient-text">UrTurn</span>
           <div className="flex items-center gap-2 rounded-full bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5">

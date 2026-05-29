@@ -44,7 +44,7 @@ export function SportStep({ form, setForm, onNext }: Props) {
               className={`relative flex flex-col items-start gap-2 rounded-2xl border-2 p-4 text-left transition-all duration-150 hover:-translate-y-0.5 active:scale-95 ${
                 isSelected
                   ? "border-primary bg-primary/6 shadow-md shadow-primary/15"
-                  : "border-border bg-white hover:border-primary/40 hover:bg-primary/3"
+                  : "border-border bg-card hover:border-primary/40 hover:bg-primary/3"
               }`}
             >
               {isSelected && (

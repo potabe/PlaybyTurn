@@ -71,7 +71,7 @@ export function TournamentBracket({ session, matches, players, isAdmin, isEditMo
 
                 return (
                   <div key={match.id} className="relative flex flex-col">
-                    <div className={`bg-white border-2 rounded-xl overflow-hidden shadow-sm transition-colors ${
+                    <div className={`bg-card border-2 rounded-xl overflow-hidden shadow-sm transition-colors ${
                       isEditMode ? "border-primary/40 shadow-primary/10" : "border-border hover:border-primary/50"
                     }`}>
                       {/* Team 1 */}

@@ -122,6 +122,53 @@
   --score-lose: oklch(0.58 0.24 27);
 }
 
+/* ============================================================
+   UrTurn Dark Theme — Slate Vibe
+   ============================================================ */
+.dark {
+  /* Core: Dark slate background, light foreground */
+  --background: oklch(0.21 0.01 250);
+  --foreground: oklch(0.98 0 0);
+
+  --card: oklch(0.24 0.015 250);
+  --card-foreground: oklch(0.98 0 0);
+
+  --popover: oklch(0.24 0.015 250);
+  --popover-foreground: oklch(0.98 0 0);
+
+  /* Primary: Energetic sport blue (slightly brighter for contrast) */
+  --primary: oklch(0.65 0.22 260);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary: Darker slate */
+  --secondary: oklch(0.3 0.02 250);
+  --secondary-foreground: oklch(0.98 0 0);
+
+  /* Muted: Subtle slate */
+  --muted: oklch(0.27 0.015 250);
+  --muted-foreground: oklch(0.7 0.02 250);
+
+  /* Accent: Vivid green for wins/success */
+  --accent: oklch(0.65 0.18 145);
+  --accent-foreground: oklch(0.15 0.05 150);
+
+  --destructive: oklch(0.65 0.24 27);
+
+  --border: oklch(0.3 0.015 250);
+  --input: oklch(0.3 0.015 250);
+  --ring: oklch(0.65 0.22 260);
+
+  /* Sidebar */
+  --sidebar: oklch(0.22 0.01 250);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.65 0.22 260);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.27 0.015 250);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.3 0.015 250);
+  --sidebar-ring: oklch(0.65 0.22 260);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

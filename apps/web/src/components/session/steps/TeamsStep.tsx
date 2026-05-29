@@ -113,7 +113,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 12, transition: { duration: 0.15 } }}
                   layout
-                  className="flex flex-col gap-2 rounded-xl border border-border bg-white px-3 py-2.5 shadow-sm"
+                  className="flex flex-col gap-2 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-6 text-center text-xs font-black text-muted-foreground flex-shrink-0">
@@ -141,7 +141,7 @@ export function TeamsStep({ form, setForm, onNext }: Props) {
                     <input
                       type="text"
                       placeholder={`Custom Name (e.g. The Smashers)`}
-                      className="w-full text-xs font-bold bg-muted/30 border border-border/50 focus:border-primary/50 focus:bg-white rounded-lg px-3 py-2 outline-none transition-all placeholder:font-medium"
+                      className="w-full text-xs font-bold bg-muted/30 border border-border/50 focus:border-primary/50 focus:bg-card rounded-lg px-3 py-2 outline-none transition-all placeholder:font-medium"
                       value={team.team_name || ""}
                       onChange={(e) => updateTeamName(idx, e.target.value)}
                     />

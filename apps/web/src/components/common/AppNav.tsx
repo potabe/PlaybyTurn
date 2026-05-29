@@ -14,8 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, BarChart3, LogOut, UserCircle, ChevronDown, Download } from "lucide-react";
+import { LayoutDashboard, BarChart3, LogOut, UserCircle, ChevronDown, Download, Moon, Sun } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useTheme } from "next-themes";
 
 export function AppNav() {
   const { user, profile, signOut } = useAuth();
@@ -23,6 +24,7 @@ export function AppNav() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { isInstallable, isStandalone, isIOS, promptInstall } = usePWAInstall();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -39,7 +41,7 @@ export function AppNav() {
     : user?.email?.slice(0, 2).toUpperCase() ?? "U";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-1.5">
@@ -119,8 +121,6 @@ export function AppNav() {
               <UserCircle className="h-4 w-4" />
               Profile & Settings
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-
             {isInstallable && !isStandalone && (
               <>
                 <DropdownMenuItem
@@ -139,6 +139,23 @@ export function AppNav() {
                 <DropdownMenuSeparator />
               </>
             )}
+
+            <DropdownMenuItem
+              className="flex items-center justify-between cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault(); // prevent dropdown from closing
+                setTheme(theme === "dark" ? "light" : "dark");
+              }}
+            >
+              <div className="flex items-center gap-2">
+                {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                <span>Theme</span>
+              </div>
+              <span className="text-xs text-muted-foreground capitalize">
+                {mounted ? theme : ""}
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
 
             <DropdownMenuItem
               className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"

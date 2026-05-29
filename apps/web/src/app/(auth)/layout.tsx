@@ -48,7 +48,7 @@ export default function AuthLayout({
             ].map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 text-sm text-left"
+                className="flex items-center gap-3 rounded-xl bg-card/10 px-4 py-3 text-sm text-left"
               >
                 <span>{item}</span>
               </div>

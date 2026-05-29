@@ -93,7 +93,7 @@ function MatchCard({
 
   return (
     <Link href={`/sessions/${session.id}/match/${match.id}`}>
-      <div className="group rounded-2xl border border-border bg-white p-4 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200">
+      <div className="group rounded-2xl border border-border bg-card p-4 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-muted-foreground">
             {court?.name ?? "Court"} · R{match.round_number}
@@ -233,7 +233,7 @@ function EndSessionModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden"
+        className="w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-2xl overflow-hidden"
       >
         <div className="w-10 h-1 rounded-full bg-border mx-auto mt-4 sm:hidden" />
 

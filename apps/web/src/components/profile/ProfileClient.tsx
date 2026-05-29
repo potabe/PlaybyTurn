@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -9,18 +9,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Camera, Check, Loader2, LogOut,
-  User, Mail, Shield, Trash2, ChevronRight, Download, Share, Plus, X as XIcon, Trophy
+  User, Mail, Shield, Trash2, ChevronRight, Download, Share, Plus, X as XIcon, Trophy, Moon, Sun, Monitor
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { SPORT_EMOJIS, SPORT_LABELS } from "@/lib/utils/format";
 import type { SportType, SkillLevel } from "@/types/session";
+import { useTheme } from "next-themes";
 
 // ─── Animated section wrapper ─────────────────────────────────
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-primary/70 px-1 ml-1">{title}</p>
-      <div className="rounded-2xl border border-border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
         {children}
       </div>
     </div>
@@ -43,14 +44,14 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6 relative"
+        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl p-6 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
         <h3 className="font-black text-xl mb-4 text-center">Install UrTurn</h3>
         <div className="space-y-6">
           <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
+            <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
               <Share className="w-5 h-5" />
             </div>
             <p className="text-sm font-semibold text-slate-700 leading-tight">
@@ -58,7 +59,7 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
+            <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
               <div className="w-5 h-5 border-2 border-primary rounded-md flex items-center justify-center font-bold text-[10px]">+</div>
             </div>
             <p className="text-sm font-semibold text-slate-700 leading-tight">
@@ -158,14 +159,14 @@ function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 420 }}
-        className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-card rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         <div className="p-5 border-b border-border bg-muted/10 flex items-center justify-between flex-shrink-0">
           <div>
             <h3 className="font-black text-lg">Sport Skills</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Select your skill level for each sport</p>
           </div>
-          <button onClick={onCancel} className="p-2 bg-white rounded-full text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors shadow-sm border border-border">
+          <button onClick={onCancel} className="p-2 bg-card rounded-full text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors shadow-sm border border-border">
             <XIcon className="h-5 w-5" />
           </button>
         </div>
@@ -189,7 +190,7 @@ function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                           isSelected 
                             ? SKILL_COLORS[level] + " ring-2 ring-primary/20 scale-105" 
-                            : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                            : "bg-card text-slate-500 border-slate-200 hover:bg-slate-50"
                         }`}
                       >
                         {SKILL_LABELS[level]}
@@ -202,7 +203,7 @@ function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
           })}
         </div>
 
-        <div className="p-5 border-t border-border bg-white flex-shrink-0">
+        <div className="p-5 border-t border-border bg-card flex-shrink-0">
           <Button
             className="w-full h-12 rounded-xl font-black"
             onClick={() => onSave(skills as Record<SportType, SkillLevel>)}
@@ -236,7 +237,7 @@ function EditNameModal({ currentName, onSave, onCancel, isSaving }: {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 420 }}
-        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
       >
         <div className="p-5 border-b border-border bg-muted/10">
           <h3 className="font-black text-lg">Edit Display Name</h3>
@@ -292,7 +293,7 @@ function ConfirmModal({ title, description, confirmLabel, onConfirm, onCancel, i
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 420 }}
-        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
       >
         <div className="p-6 text-center">
           <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${isDestructive ? "bg-destructive/10" : "bg-primary/10"}`}>
@@ -324,6 +325,12 @@ export function ProfileClient() {
   const router = useRouter();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [modal, setModal] = useState<"name" | "skills" | "signout" | "ios-install" | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -475,7 +482,7 @@ export function ProfileClient() {
 
       {/* Avatar hero section */}
       <div className="max-w-lg mx-auto px-4 mb-8">
-        <div className="rounded-3xl border border-border bg-white shadow-sm overflow-hidden">
+        <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
           <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
           <div className="px-6 pb-6 -mt-10 flex items-end gap-4">
             <div className="relative flex-shrink-0">
@@ -518,7 +525,7 @@ export function ProfileClient() {
         
         {/* Skills */}
         <Section title="Sports & Skills">
-          <div className="p-4 bg-white border-b border-border">
+          <div className="p-4 bg-card border-b border-border">
             {(!localProfile?.skill_levels || Object.keys(localProfile.skill_levels).length === 0) ? (
               <div className="text-center py-4">
                 <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
@@ -581,6 +588,35 @@ export function ProfileClient() {
               value="Add UrTurn to your home screen"
               onClick={handleInstallClick}
             />
+          </Section>
+        )}
+
+        {/* Appearance */}
+        {mounted && (
+          <Section title="Appearance">
+            <div className="px-4 py-4 space-y-3">
+              <p className="text-sm font-semibold mb-2">Theme</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => setTheme("light")}
+                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                    theme === "light" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Sun className="h-5 w-5" />
+                  <span className="text-xs font-bold">Light</span>
+                </button>
+                <button
+                  onClick={() => setTheme("dark")}
+                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                    theme === "dark" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Moon className="h-5 w-5" />
+                  <span className="text-xs font-bold">Dark</span>
+                </button>
+              </div>
+            </div>
           </Section>
         )}
 

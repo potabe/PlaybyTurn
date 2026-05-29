@@ -103,7 +103,7 @@ export function FeaturesSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.08 }}
-              className={`group rounded-2xl border ${feature.border} bg-white p-6 hover:shadow-md hover:-translate-y-1 transition-all duration-200`}
+              className={`group rounded-2xl border ${feature.border} bg-card p-6 hover:shadow-md hover:-translate-y-1 transition-all duration-200`}
             >
               <div
                 className={`inline-flex rounded-xl ${feature.bg} p-3 mb-4`}

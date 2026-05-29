@@ -46,7 +46,7 @@ function DeleteConfirmModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden"
+        className="w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-2xl overflow-hidden"
       >
         {/* Drag handle */}
         <div className="w-10 h-1 rounded-full bg-border mx-auto mt-4 mb-0 sm:hidden" />
@@ -130,7 +130,7 @@ function SessionCard({
       transition={{ duration: 0.3 }}
       layout
     >
-      <div className="group flex items-center gap-3 rounded-2xl border border-border bg-white hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden pr-1">
+      <div className="group flex items-center gap-3 rounded-2xl border border-border bg-card hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden pr-1">
         {/* Main clickable area */}
         <Link
           href={`/sessions/${session.id}`}
@@ -213,7 +213,7 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex items-center gap-4 rounded-2xl border border-border bg-white p-4">
+        <div key={i} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
           <Skeleton className="h-12 w-12 rounded-xl" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
