@@ -103,9 +103,9 @@ function StandingsTable({ players }: { players: Player[] }) {
           pointsText = "text-yellow-600";
           pointsLabel = "text-yellow-600/60";
         } else if (rank === 2) {
-          pointsBg = "bg-slate-50 border-slate-200";
-          pointsText = "text-slate-600";
-          pointsLabel = "text-slate-600/60";
+          pointsBg = "bg-muted/30 border-border";
+          pointsText = "text-muted-foreground";
+          pointsLabel = "text-muted-foreground/60";
         } else if (rank === 3) {
           pointsBg = "bg-amber-50 border-amber-200";
           pointsText = "text-amber-700";
@@ -330,7 +330,7 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
               <Trophy className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-bold uppercase tracking-wider">Tournament Bracket</h2>
             </div>
-            <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px]">
+            <div className="bg-muted/30 rounded-2xl border border-border min-h-[300px]">
               <TournamentBracket session={session} matches={matches ?? []} players={players ?? []} />
             </div>
           </section>

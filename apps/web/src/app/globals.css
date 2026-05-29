@@ -195,7 +195,7 @@
 @layer utilities {
   /* Score display — huge numbers for tap zones */
   .score-display {
-    font-size: clamp(4rem, 20vw, 8rem);
+    font-size: clamp(6rem, 30vh, 12rem);
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.04em;
@@ -222,5 +222,13 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Glassmorphism Panel */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all;
+  }
+  .dark .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)];
   }
 }

@@ -48,7 +48,7 @@ export function ShareResultModal({ open, onOpenChange, session, players }: Props
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] sm:w-fit sm:max-w-lg bg-slate-50">
+      <DialogContent className="w-[95vw] sm:w-fit sm:max-w-lg bg-muted/30">
         <DialogHeader>
           <DialogTitle className="text-xl font-black">Share Results</DialogTitle>
         </DialogHeader>

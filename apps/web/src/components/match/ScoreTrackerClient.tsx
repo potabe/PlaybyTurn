@@ -402,59 +402,9 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       )}
 
 
-      {/* ── Score tap zones (50/50 vertical split) ── */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Team 1 */}
-        <motion.button
-          id="score-team1-btn"
-          className={`relative flex-1 flex flex-col items-center justify-center select-none cursor-pointer transition-colors ${
-            tapFeedback === "team1" ? "bg-primary/8" : "bg-background hover:bg-primary/4 active:bg-primary/10"
-          }`}
-          onClick={() => addPoint("team1")}
-          disabled={isComplete}
-          whileTap={{ scale: 0.97 }}
-        >
-          <AnimatePresence>
-            {tapFeedback === "team1" && (
-              <motion.div
-                initial={{ scale: 1.6, opacity: 0.6 }}
-                animate={{ scale: 2.2, opacity: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="absolute inset-0 bg-primary/15 rounded-none pointer-events-none"
-              />
-            )}
-          </AnimatePresence>
-          {/* Score + minus button */}
-          <div className="flex items-center gap-3">
-            <div className="score-display text-foreground">{display.team1}</div>
-            <AnimatePresence>
-              {history.length > 0 && !isComplete && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ type: "spring", damping: 18, stiffness: 380 }}
-                  onClick={(e) => { e.stopPropagation(); undoPoint(); }}
-                  className="flex items-center justify-center w-11 h-11 rounded-full bg-muted border border-border hover:bg-muted/70 active:scale-90 transition-transform shadow-sm"
-                  aria-label="Undo last point"
-                  id="undo-btn"
-                >
-                  <Minus className="h-5 w-5 text-foreground" />
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
-          <p className="text-sm font-bold text-muted-foreground mt-3 px-4 text-center max-w-48 truncate">
-            {team1Name}
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Tap to score</p>
-        </motion.button>
-
-        {/* Divider */}
-        <div className="w-px bg-border flex-shrink-0" />
-
-        {/* Team 2 */}
+      {/* ── Score tap zones (Horizontal split top/bottom) ── */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Team 2 (Top) */}
         <motion.button
           id="score-team2-btn"
           className={`relative flex-1 flex flex-col items-center justify-center select-none cursor-pointer transition-colors ${
@@ -475,7 +425,6 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               />
             )}
           </AnimatePresence>
-          {/* Minus button + score (mirrored) */}
           <div className="flex items-center gap-3">
             <AnimatePresence>
               {history.length > 0 && !isComplete && (
@@ -485,20 +434,69 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   exit={{ opacity: 0, scale: 0.5 }}
                   transition={{ type: "spring", damping: 18, stiffness: 380 }}
                   onClick={(e) => { e.stopPropagation(); undoPoint(); }}
-                  className="flex items-center justify-center w-11 h-11 rounded-full bg-muted border border-border hover:bg-muted/70 active:scale-90 transition-transform shadow-sm"
+                  className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full glass-panel active:scale-90 transition-transform shadow-md z-10"
                   aria-label="Undo last point"
                   id="undo-btn-team2"
                 >
-                  <Minus className="h-5 w-5 text-foreground" />
+                  <Minus className="h-6 w-6 text-foreground" />
                 </motion.button>
               )}
             </AnimatePresence>
             <div className="score-display text-foreground">{display.team2}</div>
           </div>
-          <p className="text-sm font-bold text-muted-foreground mt-3 px-4 text-center max-w-48 truncate">
+          <p className="text-sm font-bold text-muted-foreground mt-1 px-4 text-center max-w-[80vw] truncate">
             {team2Name}
           </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Tap to score</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mt-1 font-bold">Tap anywhere to score</p>
+        </motion.button>
+
+        {/* Horizontal Divider */}
+        <div className="h-2 bg-muted flex-shrink-0 border-y border-border" />
+
+        {/* Team 1 (Bottom) */}
+        <motion.button
+          id="score-team1-btn"
+          className={`relative flex-1 flex flex-col items-center justify-center select-none cursor-pointer transition-colors ${
+            tapFeedback === "team1" ? "bg-primary/8" : "bg-background hover:bg-primary/4 active:bg-primary/10"
+          }`}
+          onClick={() => addPoint("team1")}
+          disabled={isComplete}
+          whileTap={{ scale: 0.97 }}
+        >
+          <AnimatePresence>
+            {tapFeedback === "team1" && (
+              <motion.div
+                initial={{ scale: 1.6, opacity: 0.6 }}
+                animate={{ scale: 2.2, opacity: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="absolute inset-0 bg-primary/15 rounded-none pointer-events-none"
+              />
+            )}
+          </AnimatePresence>
+          <div className="flex items-center gap-3">
+            <div className="score-display text-foreground">{display.team1}</div>
+            <AnimatePresence>
+              {history.length > 0 && !isComplete && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ type: "spring", damping: 18, stiffness: 380 }}
+                  onClick={(e) => { e.stopPropagation(); undoPoint(); }}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-12 h-12 rounded-full glass-panel active:scale-90 transition-transform shadow-md z-10"
+                  aria-label="Undo last point"
+                  id="undo-btn"
+                >
+                  <Minus className="h-6 w-6 text-foreground" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+          <p className="text-sm font-bold text-muted-foreground mt-1 px-4 text-center max-w-[80vw] truncate">
+            {team1Name}
+          </p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mt-1 font-bold">Tap anywhere to score</p>
         </motion.button>
       </div>
 

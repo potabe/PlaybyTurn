@@ -34,9 +34,9 @@ function LeaderboardRow({ player, rank }: { player: Player; rank: number }) {
     pointsText = "text-yellow-600";
     pointsLabel = "text-yellow-600/60";
   } else if (rank === 2) {
-    pointsBg = "bg-slate-50 border-slate-200";
-    pointsText = "text-slate-600";
-    pointsLabel = "text-slate-600/60";
+    pointsBg = "bg-muted/30 border-border";
+    pointsText = "text-muted-foreground";
+    pointsLabel = "text-muted-foreground/60";
   } else if (rank === 3) {
     pointsBg = "bg-amber-50 border-amber-200";
     pointsText = "text-amber-700";
@@ -674,7 +674,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
         {/* Bracket tab */}
         {session?.is_knockout && (
           <TabsContent value="bracket" className="mt-4">
-            <div className="bg-slate-50/50 rounded-2xl border border-border min-h-[300px] flex flex-col">
+            <div className="bg-muted/30 rounded-2xl border border-border min-h-[300px] flex flex-col">
               {canEditSeeding && (
                 <div className="flex items-center justify-between p-4 border-b border-border/50">
                   <div className="flex-1">

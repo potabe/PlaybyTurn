@@ -50,7 +50,7 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
         <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
         <h3 className="font-black text-xl mb-4 text-center">Install UrTurn</h3>
         <div className="space-y-6">
-          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
             <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
               <Share className="w-5 h-5" />
             </div>
@@ -58,7 +58,7 @@ function IOSInstallModal({ onClose }: { onClose: () => void }) {
               1. Tap the <span className="font-black text-primary">Share</span> button in your Safari menu bar.
             </p>
           </div>
-          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
             <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center text-primary flex-shrink-0">
               <div className="w-5 h-5 border-2 border-primary rounded-md flex items-center justify-center font-bold text-[10px]">+</div>
             </div>
@@ -190,7 +190,7 @@ function EditSkillsModal({ currentSkills, onSave, onCancel, isSaving }: {
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                           isSelected 
                             ? SKILL_COLORS[level] + " ring-2 ring-primary/20 scale-105" 
-                            : "bg-card text-slate-500 border-slate-200 hover:bg-slate-50"
+                            : "bg-card text-slate-500 border-slate-200 hover:bg-muted/30"
                         }`}
                       >
                         {SKILL_LABELS[level]}
@@ -466,7 +466,7 @@ export function ProfileClient() {
     : "—";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-background dark:to-background pb-16">
       {/* Header */}
       <div className="max-w-lg mx-auto px-4 pt-6 pb-4">
         <button
@@ -486,7 +486,7 @@ export function ProfileClient() {
           <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
           <div className="px-6 pb-6 -mt-10 flex items-end gap-4">
             <div className="relative flex-shrink-0">
-              <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+              <Avatar className="h-20 w-20 border-4 border-white dark:border-card shadow-lg">
                 <AvatarImage src={localProfile?.avatar_url ?? undefined} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-black">
                   {initials}
@@ -495,7 +495,7 @@ export function ProfileClient() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingAvatar}
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-white shadow hover:bg-primary/90 transition-colors"
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-white dark:border-card shadow hover:bg-primary/90 transition-colors"
               >
                 {isUploadingAvatar ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -528,7 +528,7 @@ export function ProfileClient() {
           <div className="p-4 bg-card border-b border-border">
             {(!localProfile?.skill_levels || Object.keys(localProfile.skill_levels).length === 0) ? (
               <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-3">
                   <Trophy className="h-5 w-5 text-slate-300" />
                 </div>
                 <p className="text-sm font-semibold text-slate-500">No sports added yet</p>
@@ -537,7 +537,7 @@ export function ProfileClient() {
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(localProfile.skill_levels).map(([sport, level]) => (
-                  <div key={sport} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div key={sport} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-muted/30 border border-border/50">
                     <div className="flex items-center gap-1.5">
                       <span className="text-base">{SPORT_EMOJIS[sport as SportType]}</span>
                       <span className="text-xs font-bold text-slate-700">{SPORT_LABELS[sport as SportType]}</span>
