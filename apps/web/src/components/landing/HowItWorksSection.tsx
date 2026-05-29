@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
@@ -8,7 +8,7 @@ import { IconUser, IconUsers, IconHeartHandshake, IconRefresh } from "@tabler/ic
 const FORMATS = [
   {
     name: "Singles",
-    desc: "1v1 — individual rotation",
+    desc: "1v1 - individual rotation",
     icon: <IconUser className="w-10 h-10 mx-auto text-indigo-500" />,
     players: "2+",
   },
@@ -120,4 +120,3 @@ export function HowItWorksSection() {
     </section>
   );
 }
-
