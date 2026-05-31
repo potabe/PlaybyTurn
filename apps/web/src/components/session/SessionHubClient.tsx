@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconShare2, IconTrophy, IconActivity, IconClock, IconChevronRight, IconCheck, IconFlagOff, IconFlag, IconAlertTriangle, IconX, IconPhoto as IconPhoto } from "@tabler/icons-react";
+import { IconShare2, IconTrophy, IconActivity, IconClock, IconChevronRight, IconCheck, IconFlagOff, IconFlag, IconAlertTriangle, IconX, IconPhoto as IconPhoto, IconUsers, IconMapPin } from "@tabler/icons-react";
 import { ShareResultModal } from "./ShareResultModal";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
@@ -605,12 +605,15 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: "Players", value: players?.length ?? 0, icon: "👥" },
-          { label: "Courts", value: courts?.length ?? 0, icon: "📍" },
-          { label: "Matches", value: matches?.length ?? 0, icon: "🏆" },
+          { label: "Players", value: players?.length ?? 0, icon: <IconUsers className="w-5 h-5 text-indigo-500" /> },
+          { label: "Courts", value: courts?.length ?? 0, icon: <IconMapPin className="w-5 h-5 text-rose-500" /> },
+          { label: "Matches", value: matches?.length ?? 0, icon: <IconTrophy className="w-5 h-5 text-amber-500" /> },
         ].map((stat) => (
           <div key={stat.label} className="rounded-xl bg-muted/50 border border-border px-3 py-2.5 text-center">
-            <p className="text-lg font-black">{stat.icon} {stat.value}</p>
+            <div className="flex items-center justify-center gap-1.5 mb-0.5 text-lg font-black">
+              {stat.icon}
+              <span>{stat.value}</span>
+            </div>
             <p className="text-xs text-muted-foreground">{stat.label}</p>
           </div>
         ))}
