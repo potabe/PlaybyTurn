@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -634,7 +634,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                       disabled={finishMatch.isPending}
                       id="force-end-btn"
                     >
-                      {finishMatch.isPending ? "Savingâ€¦" : "End Anyway"}
+                      {finishMatch.isPending ? "Saving..." : "End Anyway"}
                     </Button>
                   </div>
                 </>
@@ -683,7 +683,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                   disabled={reopenMatch.isPending}
                   id="confirm-reopen-btn"
                 >
-                  {reopenMatch.isPending ? "Reopeningâ€¦" : "Yes, Re-open"}
+                  {reopenMatch.isPending ? "Reopening..." : "Yes, Re-open"}
                 </Button>
               </div>
             </motion.div>
