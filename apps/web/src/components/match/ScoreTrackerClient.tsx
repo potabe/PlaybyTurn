@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { getScoringEngine } from "@/lib/scoring";
-import { IconArrowLeft, IconMinus, IconCircleCheckFilled, IconAlertTriangle, IconPencil } from "@tabler/icons-react";
+import { IconArrowLeft, IconMinus, IconCircleCheckFilled, IconAlertTriangle, IconPencil, IconTrophy } from "@tabler/icons-react";
 
 
 import { Button } from "@/components/ui/button";
@@ -595,7 +595,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
               {isComplete ? (
                 <>
                   <div className="text-center mb-6">
-                    <div className="text-5xl mb-3">ðŸ†</div>
+                    <div className="flex justify-center mb-3 text-amber-500"><IconTrophy className="w-12 h-12" /></div>
                     <h3 className="text-xl font-black">Match Complete!</h3>
                     <p className="text-muted-foreground mt-1">
                       <strong>{winner === "team1" ? team1Name : team2Name}</strong> wins!
@@ -608,13 +608,13 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
                     id="confirm-finish-btn"
                   >
                     <IconCircleCheckFilled className="h-4 w-4 mr-2" />
-                    {finishMatch.isPending ? "Savingâ€¦" : "Save Result & Continue"}
+                    {finishMatch.isPending ? "Saving…" : "Save Result & Continue"}
                   </Button>
                 </>
               ) : (
                 <>
                   <div className="text-center mb-6">
-                    <div className="text-4xl mb-3">âš ï¸</div>
+                    <div className="flex justify-center mb-3 text-amber-500"><IconAlertTriangle className="w-10 h-10" /></div>
                     <h3 className="text-xl font-black">End match early?</h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       The match isn't finished. Current score will be saved.
@@ -663,7 +663,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
             >
               <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
               <div className="text-center mb-6">
-                <div className="text-4xl mb-3">âš ï¸</div>
+                <div className="flex justify-center mb-3 text-amber-500"><IconAlertTriangle className="w-10 h-10" /></div>
                 <h3 className="text-xl font-black">Re-open Match?</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   This will undo the final result and deduct any points/wins that were awarded to the players.
