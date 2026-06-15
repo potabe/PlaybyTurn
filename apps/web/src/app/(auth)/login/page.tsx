@@ -20,7 +20,7 @@ function GitHubIcon() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="w-full">
       <Suspense fallback={
         <div className="w-full max-w-sm animate-pulse space-y-4">
           <div className="h-8 w-24 bg-muted rounded" />

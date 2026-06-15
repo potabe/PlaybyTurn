@@ -68,7 +68,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="w-full">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <Link href="/" className="inline-block mb-8">
