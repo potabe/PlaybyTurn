@@ -332,7 +332,8 @@ export function ProfileClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-  const [localProfile, setLocalProfile] = useState(profile);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [localProfile, setLocalProfile] = useState<any>(profile);
   
   const { isInstallable, isStandalone, isIOS, promptInstall } = usePWAInstall();
 
@@ -410,11 +411,12 @@ export function ProfileClient() {
 
   // ── Remove avatar ─────────────────────────────────────────
   const handleRemoveAvatar = async () => {
-    if (!user || !localProfile?.avatar_url) return;
+    if (!user || !localProfile?.image) return;
     setIsUploadingAvatar(true);
     try {
       showToast("Avatar upload disabled", false);
-      return;
+      setLocalProfile((p: any) => p ? { ...p, image: null } : p);
+      showToast("Avatar removed");
     } catch {
       showToast("Failed to remove avatar", false);
     } finally {
@@ -448,7 +450,7 @@ export function ProfileClient() {
           <div className="px-6 pb-6 -mt-10 flex items-end gap-4">
             <div className="relative flex-shrink-0">
               <Avatar className="h-20 w-20 border-4 border-white dark:border-card shadow-lg">
-                <AvatarImage src={localProfile?.avatar_url ?? undefined} />
+                <AvatarImage src={localProfile?.image ?? undefined} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-black">
                   {initials}
                 </AvatarFallback>
@@ -528,7 +530,7 @@ export function ProfileClient() {
         </Section>
 
         {/* Avatar */}
-        {localProfile?.avatar_url && (
+        {localProfile?.image && (
           <Section title="Avatar">
             <Row
               icon={IconTrash}

@@ -1,11 +1,17 @@
-import { createContext, useContext, ReactNode } from "react";
-
-const AuthContext = createContext<any>(null);
+"use client";
+import { SessionProvider, useSession, signOut } from "next-auth/react";
+import { ReactNode } from "react";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>;
+  return <SessionProvider>{children}</SessionProvider>;
 }
 
-export function useAuth(): any {
-  return { user: {} as any, session: {} as any, profile: {} as any, isLoading: false, signOut: async () => {} };
+export function useAuth() {
+  const { data: session, status } = useSession();
+  return { 
+    user: session?.user || null, 
+    profile: session?.user || null, 
+    isLoading: status === "loading", 
+    signOut: () => signOut({ callbackUrl: "/login" }) 
+  };
 }
