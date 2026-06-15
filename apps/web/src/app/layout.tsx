@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { NeonAuthProvider } from "@/components/providers/NeonAuthProvider";
 import { QueryProvider } from "@/context/QueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineBanner } from "@/components/common/OfflineBanner";
@@ -87,12 +86,10 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans`}>
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-            <NeonAuthProvider>
-              <TooltipProvider>
-                <OfflineBanner />
-                {children}
-              </TooltipProvider>
-            </NeonAuthProvider>
+            <TooltipProvider>
+              <OfflineBanner />
+              {children}
+            </TooltipProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>
