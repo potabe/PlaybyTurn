@@ -104,7 +104,7 @@ function LoginForm() {
       <div className="flex flex-col gap-3 mb-6">
         <Button
           variant="outline"
-          className="w-full h-11 rounded-xl font-semibold gap-2 border-border hover:bg-foreground hover:text-background transition-colors"
+          className="w-full h-11 rounded-xl font-semibold gap-2 border-border hover:bg-accent hover:text-accent-foreground transition-colors"
           onClick={handleGitHubLogin}
           disabled={isGitHubLoading || isDiscordLoading || isLoading}
           id="github-login-btn"
