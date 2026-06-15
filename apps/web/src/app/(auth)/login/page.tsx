@@ -119,7 +119,7 @@ function LoginForm() {
         
         <Button
           variant="outline"
-          className="w-full h-11 rounded-xl font-semibold gap-2 border-[#5865F2]/30 hover:bg-[#5865F2] hover:text-white transition-colors"
+          className="w-full h-11 rounded-xl font-semibold gap-2 border-border hover:bg-accent hover:text-accent-foreground transition-colors"
           onClick={handleDiscordLogin}
           disabled={isGitHubLoading || isDiscordLoading || isLoading}
           id="discord-login-btn"
@@ -127,7 +127,7 @@ function LoginForm() {
           {isDiscordLoading ? (
             <IconLoader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <IconBrandDiscord className="h-4 w-4 text-[#5865F2] group-hover:text-white" />
+            <IconBrandDiscord className="h-4 w-4" />
           )}
           Continue with Discord
         </Button>
