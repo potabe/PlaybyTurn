@@ -12,7 +12,7 @@ export default async function AppLayout({
   const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
 
   if (!session?.data?.user) {
-    redirect("/login");
+    redirect("/auth/sign-in");
   }
 
   return (

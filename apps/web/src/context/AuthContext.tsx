@@ -15,7 +15,7 @@ export function useAuth() {
     isLoading: isPending, 
     signOut: async () => {
       await authClient.signOut();
-      window.location.href = "/login";
+      window.location.href = "/auth/sign-in";
     }
   };
 }

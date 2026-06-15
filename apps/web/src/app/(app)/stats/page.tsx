@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function StatsPage() {
   const reqHeaders = await headers();
   const authSession = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
-  if (!authSession?.data?.user) redirect("/login");
+  if (!authSession?.data?.user) redirect("/auth/sign-in");
 
   const sessionsData = await getDashboardSessions();
   const sessions = sessionsData as unknown as Session[];
