@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionByCode, getSessionPlayers, getSessionCourts, getSessionMatches } from "@/actions/queries";
 import { SpectatorClient } from "@/components/spectator/SpectatorClient";
 import type { Session, Player, Court, Match } from "@/types/session";
 
@@ -10,12 +10,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("sessions")
-    .select("title, sport")
-    .eq("spectator_code", code.toUpperCase())
-    .single<Pick<Session, "title" | "sport">>();
+  const data = await getSessionByCode(code.toUpperCase());
 
   return {
     title: data ? `${data.title} — Live` : "Live Session",
@@ -25,28 +20,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SpectatorPage({ params }: Props) {
   const { code } = await params;
-  const supabase = await createClient();
+  const session = await getSessionByCode(code.toUpperCase());
 
-  const { data: session, error } = await supabase
-    .from("sessions")
-    .select("*")
-    .eq("spectator_code", code.toUpperCase())
-    .single<Session>();
-
-  if (error || !session) notFound();
+  if (!session) notFound();
 
   const [playersRes, courtsRes, matchesRes] = await Promise.all([
-    supabase.from("players").select("*").eq("session_id", session.id),
-    supabase.from("courts").select("*").eq("session_id", session.id),
-    supabase.from("matches").select("*").eq("session_id", session.id).order("round_number"),
+    getSessionPlayers(session.id),
+    getSessionCourts(session.id),
+    getSessionMatches(session.id),
   ]);
 
   return (
     <SpectatorClient
-      session={session}
-      initialPlayers={(playersRes.data as Player[]) ?? []}
-      initialCourts={(courtsRes.data as Court[]) ?? []}
-      initialMatches={(matchesRes.data as Match[]) ?? []}
+      session={session as unknown as Session}
+      initialPlayers={(playersRes as unknown as Player[]) ?? []}
+      initialCourts={(courtsRes as unknown as Court[]) ?? []}
+      initialMatches={(matchesRes as unknown as Match[]) ?? []}
     />
   );
 }

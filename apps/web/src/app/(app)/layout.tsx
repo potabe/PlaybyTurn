@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/common/AppNav";
 
@@ -7,13 +7,10 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Server-side auth guard
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Server-side auth guard via NextAuth
+  const session = await auth();
 
-  if (!user) {
+  if (!session?.user) {
     redirect("/login");
   }
 

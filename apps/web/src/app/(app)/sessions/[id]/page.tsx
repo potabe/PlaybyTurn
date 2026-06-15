@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionDetails, getSessionPlayers, getSessionCourts, getSessionMatches } from "@/actions/queries";
 import { SessionHubClient } from "@/components/session/SessionHubClient";
 import type { Session, Player, Court, Match } from "@/types/session";
 
@@ -10,35 +10,29 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("sessions")
-    .select("title")
-    .eq("id", id)
-    .single<Pick<Session, "title">>();
+  const data = await getSessionDetails(id);
   return { title: data?.title ?? "Session" };
 }
 
 export default async function SessionPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
 
   // Fetch session with all related data in parallel
-  const [sessionRes, playersRes, courtsRes, matchesRes] = await Promise.all([
-    supabase.from("sessions").select("*").eq("id", id).single<Session>(),
-    supabase.from("players").select("*").eq("session_id", id).order("matches_played"),
-    supabase.from("courts").select("*").eq("session_id", id),
-    supabase.from("matches").select("*").eq("session_id", id).order("round_number"),
+  const [sessionData, playersData, courtsData, matchesData] = await Promise.all([
+    getSessionDetails(id),
+    getSessionPlayers(id),
+    getSessionCourts(id),
+    getSessionMatches(id),
   ]);
 
-  if (sessionRes.error || !sessionRes.data) notFound();
+  if (!sessionData) notFound();
 
   return (
     <SessionHubClient
-      initialSession={sessionRes.data}
-      initialPlayers={(playersRes.data as Player[]) ?? []}
-      initialCourts={(courtsRes.data as Court[]) ?? []}
-      initialMatches={(matchesRes.data as Match[]) ?? []}
+      initialSession={sessionData as unknown as Session}
+      initialPlayers={(playersData as unknown as Player[]) ?? []}
+      initialCourts={(courtsData as unknown as Court[]) ?? []}
+      initialMatches={(matchesData as unknown as Match[]) ?? []}
     />
   );
 }

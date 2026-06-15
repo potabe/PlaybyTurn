@@ -25,8 +25,8 @@ export interface Profile {
   name: string;
   avatar_url: string | null;
   skill_levels?: Record<SportType, SkillLevel> | null;
-  created_at: string;
-  updated_at: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============================================================
@@ -43,8 +43,8 @@ export interface Session {
   spectator_code: string;
   is_knockout: boolean;
   metadata?: { team_names?: Record<string, string> } | null;
-  created_at: string;
-  updated_at: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ============================================================
@@ -60,8 +60,8 @@ export interface Player {
   matches_won: number;
   points_won: number;
   point_differential: number;
-  last_played_at: string | null;
-  created_at: string;
+  last_played_at: Date | null;
+  createdAt: Date;
 }
 
 // ============================================================
@@ -72,7 +72,7 @@ export interface Court {
   id: string;
   session_id: string;
   name: string;
-  created_at: string;
+  createdAt: Date;
 }
 
 // ============================================================
@@ -94,9 +94,9 @@ export interface Match {
   score_history: ScoreData[];
   match_order?: number | null;
   next_match_id?: string | null;
-  started_at: string | null;
-  completed_at: string | null;
-  created_at: string;
+  started_at: Date | null;
+  completed_at: Date | null;
+  createdAt: Date;
 }
 
 // ============================================================

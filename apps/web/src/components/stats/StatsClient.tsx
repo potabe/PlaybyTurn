@@ -26,7 +26,7 @@ interface AggregatedPlayer {
     matchesWon: number;
     pointsWon: number;
   }[];
-  lastPlayed: string | null;
+  lastPlayed: Date | null;
 }
 
 // ─── Helper: aggregate players by name ────────────────────────
@@ -65,7 +65,7 @@ function aggregatePlayers(
     agg.pointDifferential += p.point_differential;
     if (!agg.sports.includes(session.sport)) agg.sports.push(session.sport);
     if (p.last_played_at) {
-      if (!agg.lastPlayed || p.last_played_at > agg.lastPlayed) {
+      if (!agg.lastPlayed || p.last_played_at.getTime() > agg.lastPlayed.getTime()) {
         agg.lastPlayed = p.last_played_at;
       }
     }

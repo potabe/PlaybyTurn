@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { getSessionPlayers, getSessionCourts, getSessionMatches } from "@/actions/queries";
 import { IconTrophy, IconActivity, IconWifi } from "@tabler/icons-react";
 import { SPORT_EMOJIS, SPORT_LABELS, FORMAT_LABELS } from "@/lib/utils/format";
 import type { Session, Player, Court, Match } from "@/types/session";
@@ -150,7 +150,6 @@ function StandingsTable({ players }: { players: Player[] }) {
 
 // ─── Main spectator client ────────────────────────────────
 export function SpectatorClient({ session, initialPlayers, initialCourts, initialMatches }: Props) {
-  const supabase = createClient();
   const queryClient = useQueryClient();
   const [selectedCourtId, setSelectedCourtId] = useState<string | "all">("all");
 
@@ -158,8 +157,8 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   const { data: players } = useQuery({
     queryKey: ["spectator-players", session.id],
     queryFn: async () => {
-      const { data } = await supabase.from("players").select("*").eq("session_id", session.id);
-      return (data ?? []) as Player[];
+      const data = await getSessionPlayers(session.id);
+      return (data as unknown) as Player[];
     },
     initialData: initialPlayers,
     refetchInterval: 15_000, // poll every 15s as fallback
@@ -168,8 +167,8 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   const { data: courts } = useQuery({
     queryKey: ["spectator-courts", session.id],
     queryFn: async () => {
-      const { data } = await supabase.from("courts").select("*").eq("session_id", session.id);
-      return (data ?? []) as Court[];
+      const data = await getSessionCourts(session.id);
+      return (data as unknown) as Court[];
     },
     initialData: initialCourts,
     staleTime: 60_000,
@@ -178,31 +177,14 @@ export function SpectatorClient({ session, initialPlayers, initialCourts, initia
   const { data: matches } = useQuery({
     queryKey: ["spectator-matches", session.id],
     queryFn: async () => {
-      const { data } = await supabase.from("matches").select("*").eq("session_id", session.id).order("round_number");
-      return (data ?? []) as Match[];
+      const data = await getSessionMatches(session.id);
+      return (data as unknown) as Match[];
     },
     initialData: initialMatches,
     refetchInterval: 10_000, // poll every 10s as fallback
   });
 
-  // ── Supabase Realtime ──────────────────────────────────
-  useEffect(() => {
-    const channel = supabase
-      .channel(`session:${session.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "matches", filter: `session_id=eq.${session.id}` },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["spectator-matches", session.id] });
-        }
-      )
-      .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: `session_id=eq.${session.id}` },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["spectator-players", session.id] });
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [session.id, supabase, queryClient]);
+  // Realtime removed for Prisma migration
 
   const courtMap = Object.fromEntries((courts ?? []).map((c) => [c.id, c]));
   const allActiveMatches = (matches ?? []).filter((m) => {

@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// NextAuth.js Standard Models
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // UrTurn Custom Fields
+  skill_levels  Json?
+  
+  // Relations
+  organized_tournaments TournamentSession[] @relation("Organizer")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ============================================================================
+// UrTurn Application Models
+// ============================================================================
+
+enum SportType {
+  PADEL
+  TENNIS
+  BADMINTON
+  TABLE_TENNIS
+  PICKLEBALL
+}
+
+enum FormatType {
+  SINGLES
+  FIXED_DOUBLES
+  MIXED_DOUBLES
+  AMERICANO
+}
+
+enum SessionStatus {
+  SETUP
+  ACTIVE
+  COMPLETED
+}
+
+enum GenderType {
+  MALE
+  FEMALE
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum WinningTeam {
+  TEAM1
+  TEAM2
+}
+
+model TournamentSession {
+  id             String        @id @default(uuid())
+  organizer_id   String
+  title          String
+  sport          SportType
+  format         FormatType
+  status         SessionStatus @default(SETUP)
+  spectator_code String        @unique
+  is_knockout    Boolean       @default(false)
+  metadata       Json?
+
+  // Relations
+  organizer User      @relation("Organizer", fields: [organizer_id], references: [id], onDelete: Cascade)
+  players   Player[]
+  courts    Court[]
+  matches   Match[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tournament_sessions")
+}
+
+model Player {
+  id                 String     @id @default(uuid())
+  session_id         String
+  name               String
+  gender             GenderType
+  matches_played     Int        @default(0)
+  matches_won        Int        @default(0)
+  points_won         Int        @default(0)
+  point_differential Int        @default(0)
+  last_played_at     DateTime?
+
+  // Relations
+  session TournamentSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  // Matches relations
+  team1_player1_matches Match[] @relation("Team1Player1")
+  team1_player2_matches Match[] @relation("Team1Player2")
+  team2_player1_matches Match[] @relation("Team2Player1")
+  team2_player2_matches Match[] @relation("Team2Player2")
+
+  createdAt DateTime @default(now())
+
+  @@map("players")
+}
+
+model Court {
+  id         String @id @default(uuid())
+  session_id String
+  name       String
+
+  // Relations
+  session TournamentSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  matches Match[]
+
+  createdAt DateTime @default(now())
+
+  @@map("courts")
+}
+
+model Match {
+  id               String      @id @default(uuid())
+  session_id       String
+  court_id         String?
+  round_number     Int
+  status           MatchStatus @default(PENDING)
+  team1_player1_id String?
+  team1_player2_id String?
+  team2_player1_id String?
+  team2_player2_id String?
+  winning_team     WinningTeam?
+  score_data       Json        @default("{}")
+  score_history    Json        @default("[]")
+  match_order      Int?
+  next_match_id    String?
+
+  started_at   DateTime?
+  completed_at DateTime?
+
+  // Relations
+  session TournamentSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  court   Court?            @relation(fields: [court_id], references: [id], onDelete: SetNull)
+  
+  team1_player1 Player? @relation("Team1Player1", fields: [team1_player1_id], references: [id], onDelete: SetNull)
+  team1_player2 Player? @relation("Team1Player2", fields: [team1_player2_id], references: [id], onDelete: SetNull)
+  team2_player1 Player? @relation("Team2Player1", fields: [team2_player1_id], references: [id], onDelete: SetNull)
+  team2_player2 Player? @relation("Team2Player2", fields: [team2_player2_id], references: [id], onDelete: SetNull)
+
+  // Self-relation for knockout brackets
+  next_match Match?  @relation("MatchToNextMatch", fields: [next_match_id], references: [id])
+  prev_matches Match[] @relation("MatchToNextMatch")
+
+  createdAt DateTime @default(now())
+
+  @@map("matches")
+}

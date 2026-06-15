@@ -34,7 +34,7 @@ export function AppNav() {
   const initials = profile?.name
     ? profile.name
         .split(" ")
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
@@ -83,7 +83,7 @@ export function AppNav() {
             id="user-menu-btn"
           >
             <Avatar className="h-7 w-7">
-              <AvatarImage src={mounted ? (profile?.avatar_url ?? undefined) : undefined} />
+              <AvatarImage src={user?.image ?? undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
                 {mounted ? initials : ""}
               </AvatarFallback>

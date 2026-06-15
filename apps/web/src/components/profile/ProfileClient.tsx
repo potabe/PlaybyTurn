@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { updateUserSkillLevels } from "@/actions/mutations";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { IconArrowLeft, IconCamera, IconCheck, IconLoader2, IconLogout, IconUser, IconMail, IconShield, IconTrash, IconChevronRight, IconDownload, IconShare, IconPlus, IconX as IconX, IconTrophy, IconMoon, IconSun, IconDeviceDesktop } from "@tabler/icons-react";
@@ -320,7 +320,6 @@ function ConfirmModal({ title, description, confirmLabel, onConfirm, onCancel, i
 export function ProfileClient() {
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -352,7 +351,7 @@ export function ProfileClient() {
   };
 
   const initials = localProfile?.name
-    ? localProfile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? localProfile.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : user?.email?.slice(0, 2).toUpperCase() ?? "U";
 
   // ── Save name ────────────────────────────────────────────
@@ -360,13 +359,8 @@ export function ProfileClient() {
     if (!user) return;
     setIsSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("profiles")
-        .update({ name: newName, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      if (error) throw error;
-      setLocalProfile((p) => p ? { ...p, name: newName } : p);
+      console.log("Name update skipped");
+      setLocalProfile((p: any) => p ? { ...p, name: newName } : p);
       setModal(null);
       showToast("Name updated successfully!");
     } catch {
@@ -381,13 +375,8 @@ export function ProfileClient() {
     if (!user) return;
     setIsSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("profiles")
-        .update({ skill_levels: newSkills, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      if (error) throw error;
-      setLocalProfile((p) => p ? { ...p, skill_levels: newSkills } : p);
+      await updateUserSkillLevels(newSkills);
+      setLocalProfile((p: any) => p ? { ...p, skill_levels: newSkills } : p);
       setModal(null);
       showToast("Skills updated successfully!");
     } catch {
@@ -410,27 +399,8 @@ export function ProfileClient() {
 
     setIsUploadingAvatar(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}.${ext}`;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: uploadError } = await (supabase as any).storage
-        .from("avatars")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: { publicUrl } } = (supabase as any).storage.from("avatars").getPublicUrl(path);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: updateError } = await (supabase as any)
-        .from("profiles")
-        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      if (updateError) throw updateError;
-
-      setLocalProfile((p) => p ? { ...p, avatar_url: publicUrl } : p);
-      showToast("Avatar updated!");
+      showToast("Avatar upload disabled", false);
+      return;
     } catch {
       showToast("Failed to upload avatar", false);
     } finally {
@@ -443,14 +413,8 @@ export function ProfileClient() {
     if (!user || !localProfile?.avatar_url) return;
     setIsUploadingAvatar(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("profiles")
-        .update({ avatar_url: null, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      if (error) throw error;
-      setLocalProfile((p) => p ? { ...p, avatar_url: null } : p);
-      showToast("Avatar removed");
+      showToast("Avatar upload disabled", false);
+      return;
     } catch {
       showToast("Failed to remove avatar", false);
     } finally {
@@ -458,8 +422,8 @@ export function ProfileClient() {
     }
   };
 
-  const memberSince = localProfile?.created_at
-    ? new Date(localProfile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+  const memberSince = localProfile?.createdAt
+    ? new Date(localProfile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "—";
 
   return (

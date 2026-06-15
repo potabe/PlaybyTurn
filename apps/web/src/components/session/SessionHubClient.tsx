@@ -5,7 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { getSessionDetails, getSessionPlayers, getSessionCourts, getSessionMatches } from "@/actions/queries";
+import { updateSessionStatus, cancelPendingMatches, swapSeeding as swapSeedingAction } from "@/actions/mutations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -390,7 +391,6 @@ interface Props {
 }
 
 export function SessionHubClient({ initialSession, initialPlayers, initialCourts, initialMatches }: Props) {
-  const supabase = createClient();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [endMode, setEndMode] = useState<EndMode | null>(null);
@@ -401,7 +401,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const { data: session } = useQuery({
     queryKey: ["session", initialSession.id],
     queryFn: async (): Promise<Session> => {
-      const { data } = await supabase.from("sessions").select("*").eq("id", initialSession.id).single();
+      const data = await getSessionDetails(initialSession.id);
       return (data as unknown as Session) ?? initialSession;
     },
     initialData: initialSession,
@@ -411,8 +411,8 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const { data: players } = useQuery({
     queryKey: ["players", initialSession.id],
     queryFn: async () => {
-      const { data } = await supabase.from("players").select("*").eq("session_id", initialSession.id).order("matches_won", { ascending: false });
-      return (data ?? []) as Player[];
+      const data = await getSessionPlayers(initialSession.id);
+      return (data ?? []) as unknown as Player[];
     },
     initialData: initialPlayers,
     staleTime: 10_000,
@@ -421,8 +421,8 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const { data: courts } = useQuery({
     queryKey: ["courts", initialSession.id],
     queryFn: async () => {
-      const { data } = await supabase.from("courts").select("*").eq("session_id", initialSession.id);
-      return (data ?? []) as Court[];
+      const data = await getSessionCourts(initialSession.id);
+      return (data ?? []) as unknown as Court[];
     },
     initialData: initialCourts,
     staleTime: 60_000,
@@ -431,8 +431,8 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   const { data: matches } = useQuery({
     queryKey: ["matches", initialSession.id],
     queryFn: async () => {
-      const { data } = await supabase.from("matches").select("*").eq("session_id", initialSession.id).order("round_number");
-      return (data ?? []) as Match[];
+      const data = await getSessionMatches(initialSession.id);
+      return (data ?? []) as unknown as Match[];
     },
     initialData: initialMatches,
     staleTime: 10_000,
@@ -445,27 +445,11 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
 
       // For force end: cancel all pending/in-progress matches first
       if (mode === "force") {
-        const pendingIds = (matches ?? [])
-          .filter((m) => m.status === "PENDING" || m.status === "IN_PROGRESS")
-          .map((m) => m.id);
-
-        if (pendingIds.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error: matchError } = await (supabase as any)
-            .from("matches")
-            .update({ status: "CANCELLED" })
-            .in("id", pendingIds);
-          if (matchError) throw matchError;
-        }
+        await cancelPendingMatches(sessionId);
       }
 
       // Mark session as COMPLETED
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("sessions")
-        .update({ status: "COMPLETED" })
-        .eq("id", sessionId);
-      if (error) throw error;
+      await updateSessionStatus(sessionId, "COMPLETED");
     },
     onSuccess: () => {
       // Invalidate queries so dashboard reflects new status
@@ -479,37 +463,7 @@ export function SessionHubClient({ initialSession, initialPlayers, initialCourts
   // ── Swap seeding mutation ──
   const swapSeeding = useMutation({
     mutationFn: async ({ slot1, slot2 }: { slot1: TeamSlot; slot2: TeamSlot }) => {
-      if (!matches) throw new Error("Matches not loaded");
-      
-      const m1 = matches.find(m => m.id === slot1.matchId);
-      const m2 = matches.find(m => m.id === slot2.matchId);
-      
-      if (!m1 || !m2) throw new Error("Matches not found");
-
-      // Extract teams
-      const team1_p1 = slot1.teamIndex === 1 ? m1.team1_player1_id : m1.team2_player1_id;
-      const team1_p2 = slot1.teamIndex === 1 ? m1.team1_player2_id : m1.team2_player2_id;
-      
-      const team2_p1 = slot2.teamIndex === 1 ? m2.team1_player1_id : m2.team2_player1_id;
-      const team2_p2 = slot2.teamIndex === 1 ? m2.team1_player2_id : m2.team2_player2_id;
-
-      // Update match 1
-      const update1 = slot1.teamIndex === 1 
-        ? { team1_player1_id: team2_p1, team1_player2_id: team2_p2 }
-        : { team2_player1_id: team2_p1, team2_player2_id: team2_p2 };
-
-      // Update match 2
-      const update2 = slot2.teamIndex === 1
-        ? { team1_player1_id: team1_p1, team1_player2_id: team1_p2 }
-        : { team2_player1_id: team1_p1, team2_player2_id: team1_p2 };
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: err1 } = await (supabase as any).from("matches").update(update1).eq("id", m1.id);
-      if (err1) throw err1;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: err2 } = await (supabase as any).from("matches").update(update2).eq("id", m2.id);
-      if (err2) throw err2;
+      await swapSeedingAction(slot1.matchId, slot1.teamIndex as 1 | 2, slot2.matchId, slot2.teamIndex as 1 | 2);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches", initialSession.id] });

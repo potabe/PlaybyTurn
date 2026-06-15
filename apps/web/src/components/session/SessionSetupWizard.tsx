@@ -5,8 +5,10 @@ import { motion, AnimatePresence, type Variants, type Easing } from "framer-moti
 
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
 import { generateSpectatorCode } from "@/lib/utils/shortcode";
+import { createSession as createSessionAction, createPlayers, createCourts } from "@/actions/mutations";
+import { getSessionPlayers } from "@/actions/queries";
+import { generateMatchesAction } from "@/actions/matchmaker";
 import { SportStep } from "@/components/session/steps/SportStep";
 import { FormatStep } from "@/components/session/steps/FormatStep";
 import { PlayersStep } from "@/components/session/steps/PlayersStep";
@@ -63,7 +65,6 @@ function slideVariants(direction: 1 | -1): Variants {
 export function SessionSetupWizard() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const supabase = createClient();
 
   const [currentStep, setCurrentStep] = useState<Step>("Sport");
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -88,10 +89,6 @@ export function SessionSetupWizard() {
   // ─── Mutation: create session + call Edge Function ──────
   const createSession = useMutation({
     mutationFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
       if (!form.sport || !form.format) throw new Error("Sport and format required");
 
       const spectatorCode = generateSpectatorCode();
@@ -99,49 +96,23 @@ export function SessionSetupWizard() {
         form.title.trim() ||
         `${form.sport} Session — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 
-      // Build metadata if there are custom team names
-      const metadata: { team_names?: Record<string, string> } = {};
-      if (form.format === "FIXED_DOUBLES" && form.teamAssignments.length > 0) {
-        const teamNames: Record<string, string> = {};
-        let hasCustomNames = false;
-        
-        // We need to map local IDs to DB IDs later, but wait: 
-        // We haven't created players yet!
-        // So we can't save metadata yet. We must update the session AFTER creating players.
-      }
-
       // 1. Create session
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: session, error: sessionError } = await (supabase as any)
-        .from("sessions")
-        .insert({
-          organizer_id: user.id,
-          title: sessionTitle,
-          sport: form.sport,
-          format: form.format,
-          is_knockout: form.is_knockout,
-          status: "SETUP",
-          spectator_code: spectatorCode,
-        })
-        .select()
-        .single();
-      if (sessionError) throw new Error(sessionError.message);
-      const sessionData = session as { id: string } | null;
-      if (!sessionData) throw new Error("Failed to create session");
+      const sessionData = await createSessionAction({
+        title: sessionTitle,
+        sport: form.sport,
+        format: form.format,
+        is_knockout: form.is_knockout,
+        spectator_code: spectatorCode,
+      });
 
-      // 2. Create players (only non-empty names)
+      // 2. Create players
       const namedPlayers = form.players.filter((p) => p.name.trim());
       const playerRows = namedPlayers.map((p) => ({
         session_id: sessionData.id,
         name: p.name.trim(),
         gender: p.gender,
       }));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: players, error: playersError } = await (supabase as any)
-        .from("players")
-        .insert(playerRows)
-        .select();
-      if (playersError) throw new Error(playersError.message);
+      await createPlayers(playerRows);
 
       // 3. Create courts
       const courtRows = form.courtNames
@@ -150,18 +121,17 @@ export function SessionSetupWizard() {
           session_id: sessionData.id,
           name: name.trim(),
         }));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: courts, error: courtsError } = await (supabase as any)
-        .from("courts")
-        .insert(courtRows)
-        .select();
-      if (courtsError) throw new Error(courtsError.message);
+      await createCourts(courtRows);
 
-      // 4. Resolve team assignments: local temp IDs → real DB player IDs
-      //    namedPlayers[i] corresponds to players[i] (same insertion order)
+      // 4. Resolve team assignments
+      const players = await getSessionPlayers(sessionData.id);
+      const nameToDbId = new Map<string, string>();
+      players.forEach(p => nameToDbId.set(p.name, p.id));
+      
       const localToDbId = new Map<string, string>();
-      namedPlayers.forEach((p, i) => {
-        if (players[i]) localToDbId.set(p.id, players[i].id);
+      namedPlayers.forEach(p => {
+        const dbId = nameToDbId.get(p.name);
+        if (dbId) localToDbId.set(p.id, dbId);
       });
 
       const resolvedTeams =
@@ -175,45 +145,10 @@ export function SessionSetupWizard() {
               .filter((ta) => ta.player1_id && ta.player2_id)
           : undefined;
 
-      // 4.5 Update session metadata with team names
-      if (resolvedTeams) {
-        const teamNames: Record<string, string> = {};
-        let hasCustomNames = false;
-        for (const team of resolvedTeams) {
-          if (team.team_name?.trim()) {
-            const sortedIds = [team.player1_id, team.player2_id].sort().join("_");
-            teamNames[sortedIds] = team.team_name.trim();
-            hasCustomNames = true;
-          }
-        }
+      // 5. Call Action to generate matches
+      const matchResult = await generateMatchesAction(sessionData.id, resolvedTeams);
 
-        if (hasCustomNames) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any)
-            .from("sessions")
-            .update({ metadata: { team_names: teamNames } })
-            .eq("id", sessionData.id);
-        }
-      }
-
-      // 5. Call Edge Function to generate matches
-      const { data: matchResult, error: fnError } = await supabase.functions.invoke(
-        "generate-matches",
-        {
-          body: {
-            session_id: sessionData.id,
-            players,
-            courts,
-            sport: form.sport,
-            format: form.format,
-            is_knockout: form.is_knockout,
-            ...(resolvedTeams ? { team_assignments: resolvedTeams } : {}),
-          },
-        }
-      );
-      if (fnError) throw new Error(fnError.message);
-
-      return { session: sessionData, warnings: matchResult?.warnings ?? [] };
+      return { session: sessionData, warnings: matchResult.warnings ?? [] };
     },
     onSuccess: ({ session }) => {
       queryClient.invalidateQueries({ queryKey: ["sessions"] });

@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getDashboardSessions } from "@/actions/queries";
 import { DashboardClient } from "@/components/session/DashboardClient";
+import type { Session } from "@/types/session";
 
 export const metadata: Metadata = {
   title: "Dashboard",
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
+  const sessions = await getDashboardSessions();
 
-  // Fetch user's sessions
-  const { data: sessions } = await supabase
-    .from("sessions")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  return <DashboardClient initialSessions={sessions ?? []} />;
+  return <DashboardClient initialSessions={(sessions as unknown as Session[]) ?? []} />;
 }

@@ -1,11 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
 import { getScoringEngine } from "@/lib/scoring";
+import { updateMatchScore, updatePlayerStats, updateMatchPlayers } from "@/actions/mutations";
+import { getMatchById } from "@/actions/queries";
 import { IconArrowLeft, IconMinus, IconCircleCheckFilled, IconAlertTriangle, IconPencil, IconTrophy } from "@tabler/icons-react";
 
 
@@ -24,7 +25,6 @@ interface Props {
 export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const supabase = createClient();
   const engine = getScoringEngine(session.sport);
 
   // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -101,16 +101,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
   // â”€â”€ Mutations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const updateScore = useMutation({
     mutationFn: async (newScoreData: ScoreData) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("matches")
-        .update({
-          score_data: newScoreData,
-          status: "IN_PROGRESS",
-          started_at: match.started_at ?? new Date().toISOString(),
-        })
-        .eq("id", match.id);
-      if (error) throw error;
+      await updateMatchScore(match.id, newScoreData, history, "IN_PROGRESS", null);
     },
   });
 
@@ -122,33 +113,18 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       }
 
       const winningTeam = winner;
+      const winnerTeamStr = winningTeam === "team1" ? "TEAM1" : "TEAM2";
 
-      // Update player stats
+      // Update match
+      await updateMatchScore(match.id, scoreState, history, "COMPLETED", winnerTeamStr);
+
       const winnerIds = winningTeam === "team1"
         ? [match.team1_player1_id, match.team1_player2_id]
         : [match.team2_player1_id, match.team2_player2_id];
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("matches")
-        .update({
-          status: "COMPLETED",
-          winning_team: winningTeam === "team1" ? "TEAM1" : "TEAM2",
-          completed_at: new Date().toISOString(),
-          score_data: scoreState,
-        })
-        .eq("id", match.id);
-      if (error) throw error;
-
       // â”€â”€ KNOCKOUT ADVANCE LOGIC â”€â”€
       if (match.next_match_id) {
-        // Fetch next match
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: nextMatch } = await (supabase as any)
-          .from("matches")
-          .select("*")
-          .eq("id", match.next_match_id)
-          .single();
+        const nextMatch = await getMatchById(match.next_match_id);
         
         if (nextMatch) {
           const isTeam1Empty = !nextMatch.team1_player1_id && !nextMatch.team1_player2_id;
@@ -162,16 +138,13 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
             updatePayload.team2_player2_id = winnerIds[1] ?? null;
           }
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error: nextError } = await (supabase as any)
-            .from("matches")
-            .update(updatePayload)
-            .eq("id", match.next_match_id);
-            
-          if (nextError) console.error("Failed to advance winner", nextError);
+          try {
+            await updateMatchPlayers(match.next_match_id, updatePayload);
+          } catch (nextError) {
+            console.error("Failed to advance winner", nextError);
+          }
         }
       }
-
 
       const allIds = [
         match.team1_player1_id, match.team1_player2_id,
@@ -181,33 +154,20 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       for (const playerId of allIds) {
         const isWinner = winnerIds.includes(playerId);
         
-        // Fetch fresh player data
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: dbPlayer } = await (supabase as any)
-          .from("players")
-          .select("*")
-          .eq("id", playerId)
-          .single();
-          
-        const player = dbPlayer || playerMap[playerId];
+        const player = playerMap[playerId];
         if (!player) continue;
 
         const team = (playerId === match.team1_player1_id || playerId === match.team1_player2_id) ? "team1" : "team2";
         const stats = getMatchStats(scoreState, team);
         const diff = stats.won - stats.lost;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from("players")
-          .update({
-            matches_played: player.matches_played + 1,
-            matches_won: player.matches_won + (isWinner ? 1 : 0),
-            points_won: (player.points_won || 0) + stats.won,
-            point_differential: (player.point_differential || 0) + diff,
-            last_played_at: new Date().toISOString(),
-          })
-          .eq("id", playerId);
-
+        await updatePlayerStats(
+          playerId,
+          1,
+          isWinner ? 1 : 0,
+          stats.won,
+          diff
+        );
       }
     },
     onSuccess: () => {
@@ -228,12 +188,7 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
 
       // â”€â”€ KNOCKOUT ROLLBACK LOGIC â”€â”€
       if (match.next_match_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: nextMatch } = await (supabase as any)
-          .from("matches")
-          .select("*")
-          .eq("id", match.next_match_id)
-          .single();
+        const nextMatch = await getMatchById(match.next_match_id);
         
         if (nextMatch) {
           if (nextMatch.status !== "PENDING") {
@@ -250,12 +205,11 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
           }
 
           if (Object.keys(updatePayload).length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: nextError } = await (supabase as any)
-              .from("matches")
-              .update(updatePayload)
-              .eq("id", match.next_match_id);
-            if (nextError) throw new Error("Failed to rollback next match slots");
+            try {
+              await updateMatchPlayers(match.next_match_id, updatePayload);
+            } catch (nextError) {
+              throw new Error("Failed to rollback next match slots");
+            }
           }
         }
       }
@@ -269,45 +223,24 @@ export function ScoreTrackerClient({ initialMatch, session, players }: Props) {
       for (const playerId of allIds) {
         const isWinner = winnerIds.includes(playerId);
         
-        // Fetch fresh player data
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: dbPlayer } = await (supabase as any)
-          .from("players")
-          .select("*")
-          .eq("id", playerId)
-          .single();
-          
-        const player = dbPlayer || playerMap[playerId];
+        const player = playerMap[playerId];
         if (!player) continue;
 
         const team = (playerId === match.team1_player1_id || playerId === match.team1_player2_id) ? "team1" : "team2";
         const stats = getMatchStats(scoreState, team); // Using the final score that was saved
         const diff = stats.won - stats.lost;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from("players")
-          .update({
-            matches_played: Math.max(0, player.matches_played - 1),
-            matches_won: Math.max(0, player.matches_won - (isWinner ? 1 : 0)),
-            points_won: Math.max(0, (player.points_won || 0) - stats.won),
-            point_differential: (player.point_differential || 0) - diff,
-          })
-          .eq("id", playerId);
+        await updatePlayerStats(
+          playerId,
+          -1,
+          isWinner ? -1 : 0,
+          -stats.won,
+          -diff
+        );
       }
 
       // Update match status to IN_PROGRESS
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("matches")
-        .update({
-          status: "IN_PROGRESS",
-          winning_team: null,
-          completed_at: null,
-        })
-        .eq("id", match.id);
-      
-      if (error) throw error;
+      await updateMatchScore(match.id, scoreState, history, "IN_PROGRESS", null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches", match.session_id] });

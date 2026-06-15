@@ -4,7 +4,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { getDashboardSessions } from "@/actions/queries";
+import { deleteSession as deleteSessionAction } from "@/actions/mutations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { IconPlus, IconCalendar, IconClock, IconBolt, IconTrash, IconX, IconAlertTriangle } from "@tabler/icons-react";
@@ -62,8 +63,7 @@ function DeleteConfirmModal({
             <span className="font-semibold text-foreground">&ldquo;{session.title}&rdquo;</span>
           </p>
           <p className="text-xs text-muted-foreground text-center mb-6">
-            {SPORT_EMOJIS[session.sport]} {SPORT_LABELS[session.sport]} ·{" "}
-            {FORMAT_LABELS[session.format]} · {formatRelativeTime(session.created_at)}
+            {FORMAT_LABELS[session.format]} · {formatRelativeTime(session.createdAt as any)}
           </p>
 
           {/* Warning */}
@@ -161,8 +161,8 @@ function SessionCard({
             </p>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
               <IconClock className="h-3 w-3" />
-              {formatRelativeTime(session.created_at)}
-            </p>
+            {formatRelativeTime(session.createdAt as any)}
+          </p>
           </div>
         </Link>
 
@@ -230,19 +230,14 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ initialSessions }: DashboardClientProps) {
-  const supabase = createClient();
   const queryClient = useQueryClient();
   const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null);
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ["sessions"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sessions")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Session[];
+      const data = await getDashboardSessions();
+      return data as unknown as Session[];
     },
     initialData: initialSessions,
     staleTime: 30_000,
@@ -250,12 +245,7 @@ export function DashboardClient({ initialSessions }: DashboardClientProps) {
 
   const deleteSession = useMutation({
     mutationFn: async (sessionId: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
-        .from("sessions")
-        .delete()
-        .eq("id", sessionId);
-      if (error) throw error;
+      await deleteSessionAction(sessionId);
     },
     onSuccess: (_, sessionId) => {
       // Optimistically remove from cache
