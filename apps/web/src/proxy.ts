@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const isLoggedIn = req.cookies.has("better-auth.session_token") || 
                      req.cookies.has("__Secure-better-auth.session_token") || 
                      req.cookies.has("neon-auth.session_token") ||
