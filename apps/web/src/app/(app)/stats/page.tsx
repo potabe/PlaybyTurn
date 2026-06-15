@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { StatsClient } from "@/components/stats/StatsClient";
 import { getDashboardSessions, getSessionPlayers } from "@/actions/queries";
@@ -10,8 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function StatsPage() {
-  const authSession = await auth();
-  if (!authSession?.user) redirect("/login");
+  const reqHeaders = await headers();
+  const authSession = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
+  if (!authSession?.data?.user) redirect("/login");
 
   const sessionsData = await getDashboardSessions();
   const sessions = sessionsData as unknown as Session[];

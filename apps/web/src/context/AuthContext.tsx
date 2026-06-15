@@ -1,17 +1,21 @@
 "use client";
-import { SessionProvider, useSession, signOut } from "next-auth/react";
-import { ReactNode } from "react";
+import { createAuthClient } from "@neondatabase/auth";
+import { BetterAuthReactAdapter } from "@neondatabase/auth/react/adapters";
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
-}
+export const authClient = createAuthClient(process.env.NEXT_PUBLIC_NEON_AUTH_URL || "", {
+  adapter: BetterAuthReactAdapter()
+});
 
 export function useAuth() {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = authClient.useSession();
+  
   return { 
     user: session?.user || null, 
     profile: session?.user || null, 
-    isLoading: status === "loading", 
-    signOut: () => signOut({ callbackUrl: "/login" }) 
+    isLoading: isPending, 
+    signOut: async () => {
+      await authClient.signOut();
+      window.location.href = "/login";
+    }
   };
 }

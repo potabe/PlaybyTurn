@@ -1,19 +1,33 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 
 export async function getUserProfile() {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-  return prisma.user.findUnique({ where: { id: session.user.id } });
+  const reqHeaders = await headers();
+  const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
+  if (!session?.data?.user?.id) return null;
+  let profile = await prisma.profile.findUnique({ where: { id: session.data.user.id } });
+  if (!profile) {
+    profile = await prisma.profile.create({
+      data: {
+        id: session.data.user.id,
+        email: session.data.user.email || null,
+        name: session.data.user.name || null,
+        image: session.data.user.image || null,
+      }
+    });
+  }
+  return profile;
 }
 
 export async function getDashboardSessions() {
-  const session = await auth();
-  if (!session?.user?.id) return [];
+  const reqHeaders = await headers();
+  const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
+  if (!session?.data?.user?.id) return [];
   return prisma.tournamentSession.findMany({
-    where: { organizer_id: session.user.id },
+    where: { organizer_id: session.data.user.id },
     orderBy: { createdAt: 'desc' }
   });
 }

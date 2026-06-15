@@ -1,18 +1,20 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 import { MatchStatus, SessionStatus, WinningTeam, FormatType, SportType, GenderType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function createSession(data: { title: string; sport: SportType; format: FormatType; is_knockout: boolean; spectator_code: string }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  const reqHeaders = await headers();
+  const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
+  if (!session?.data?.user?.id) throw new Error("Unauthorized");
   
   return prisma.tournamentSession.create({
     data: {
       ...data,
-      organizer_id: session.user.id,
+      organizer_id: session.data.user.id,
     }
   });
 }
@@ -32,10 +34,11 @@ export async function updateSessionStatus(sessionId: string, status: SessionStat
 }
 
 export async function deleteSession(sessionId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  const reqHeaders = await headers();
+  const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
+  if (!session?.data?.user?.id) throw new Error("Unauthorized");
   return prisma.tournamentSession.delete({
-    where: { id: sessionId, organizer_id: session.user.id }
+    where: { id: sessionId, organizer_id: session.data.user.id }
   });
 }
 
@@ -95,10 +98,11 @@ export async function updatePlayerStats(playerId: string, matchesPlayed: number,
 }
 
 export async function updateUserSkillLevels(skillLevels: any) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  return prisma.user.update({
-    where: { id: session.user.id },
+  const reqHeaders = await headers();
+  const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
+  if (!session?.data?.user?.id) throw new Error("Unauthorized");
+  return prisma.profile.update({
+    where: { id: session.data.user.id },
     data: { skill_levels: skillLevels as any }
   });
 }

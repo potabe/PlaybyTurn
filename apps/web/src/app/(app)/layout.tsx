@@ -1,4 +1,5 @@
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppNav } from "@/components/common/AppNav";
 
@@ -7,10 +8,10 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Server-side auth guard via NextAuth
-  const session = await auth();
+  const reqHeaders = await headers();
+  const session = await auth.getSession({ fetchOptions: { headers: reqHeaders } }).catch(() => null);
 
-  if (!session?.user) {
+  if (!session?.data?.user) {
     redirect("/login");
   }
 
