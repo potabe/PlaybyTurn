@@ -52,13 +52,23 @@ function LoginForm() {
   async function handleGitHubLogin() {
     setIsGitHubLoading(true);
     setError(null);
-    await authClient.signIn.social({ provider: "github", callbackURL: redirect });
+    try {
+      await authClient.signIn.social({ provider: "github", callbackURL: redirect });
+    } catch (err: any) {
+      setError(err.message || "GitHub login failed.");
+      setIsGitHubLoading(false);
+    }
   }
 
   async function handleDiscordLogin() {
     setIsDiscordLoading(true);
     setError(null);
-    await authClient.signIn.social({ provider: "discord", callbackURL: redirect });
+    try {
+      await authClient.signIn.social({ provider: "discord", callbackURL: redirect });
+    } catch (err: any) {
+      setError(err.message || "Discord login failed.");
+      setIsDiscordLoading(false);
+    }
   }
 
   async function handleEmailLogin(e: React.FormEvent) {
@@ -66,18 +76,23 @@ function LoginForm() {
     setIsLoading(true);
     setError(null);
 
-    const { error } = await authClient.signIn.email({
-      email,
-      password,
-      callbackURL: redirect
-    });
+    try {
+      const { error } = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: redirect
+      });
 
-    if (error) {
-      setError(error.message || "Invalid email or password.");
+      if (error) {
+        setError(error.message || "Invalid email or password.");
+        setIsLoading(false);
+      } else {
+        router.push(redirect);
+        router.refresh();
+      }
+    } catch (err: any) {
+      setError(err.message || "Invalid email or password.");
       setIsLoading(false);
-    } else {
-      router.push(redirect);
-      router.refresh();
     }
   }
 

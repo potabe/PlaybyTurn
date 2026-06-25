@@ -33,13 +33,23 @@ export default function SignupPage() {
   async function handleGitHubSignup() {
     setIsGitHubLoading(true);
     setError(null);
-    await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
+    try {
+      await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
+    } catch (err: any) {
+      setError(err.message || "GitHub signup failed.");
+      setIsGitHubLoading(false);
+    }
   }
 
   async function handleDiscordSignup() {
     setIsDiscordLoading(true);
     setError(null);
-    await authClient.signIn.social({ provider: "discord", callbackURL: "/dashboard" });
+    try {
+      await authClient.signIn.social({ provider: "discord", callbackURL: "/dashboard" });
+    } catch (err: any) {
+      setError(err.message || "Discord signup failed.");
+      setIsDiscordLoading(false);
+    }
   }
 
   async function handleEmailSignup(e: React.FormEvent) {
@@ -51,19 +61,24 @@ export default function SignupPage() {
     setIsLoading(true);
     setError(null);
 
-    const { error } = await authClient.signUp.email({
-      email,
-      password,
-      name,
-      callbackURL: "/dashboard"
-    });
+    try {
+      const { error } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+        callbackURL: "/dashboard"
+      });
 
-    if (error) {
-      setError(error.message || "Signup failed.");
+      if (error) {
+        setError(error.message || "Signup failed.");
+        setIsLoading(false);
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err: any) {
+      setError(err.message || "Signup failed.");
       setIsLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   }
 
