@@ -53,7 +53,7 @@ function LoginForm() {
     setIsGitHubLoading(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "github", callbackURL: redirect });
+      await authClient.signIn.social({ provider: "github", callbackURL: "/callback" });
     } catch (err: any) {
       setError(err.message || "GitHub login failed.");
       setIsGitHubLoading(false);
@@ -64,7 +64,7 @@ function LoginForm() {
     setIsDiscordLoading(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "discord", callbackURL: redirect });
+      await authClient.signIn.social({ provider: "discord", callbackURL: "/callback" });
     } catch (err: any) {
       setError(err.message || "Discord login failed.");
       setIsDiscordLoading(false);

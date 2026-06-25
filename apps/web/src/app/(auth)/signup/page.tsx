@@ -34,7 +34,7 @@ export default function SignupPage() {
     setIsGitHubLoading(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "github", callbackURL: "/dashboard" });
+      await authClient.signIn.social({ provider: "github", callbackURL: "/callback" });
     } catch (err: any) {
       setError(err.message || "GitHub signup failed.");
       setIsGitHubLoading(false);
@@ -45,7 +45,7 @@ export default function SignupPage() {
     setIsDiscordLoading(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "discord", callbackURL: "/dashboard" });
+      await authClient.signIn.social({ provider: "discord", callbackURL: "/callback" });
     } catch (err: any) {
       setError(err.message || "Discord signup failed.");
       setIsDiscordLoading(false);
